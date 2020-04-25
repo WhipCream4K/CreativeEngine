@@ -7,6 +7,7 @@ namespace dae
 	class GameObject;
 	class BaseComponent
 	{
+		// TODO: Try to get rid of this dependencies
 		friend class GameObject;
 		
 	public:
