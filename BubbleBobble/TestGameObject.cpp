@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TestGameObject.h"
 #include "InputComponent.h"
 

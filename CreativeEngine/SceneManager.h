@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <memory>
-#include <glm.hpp>
 
 struct SDL_Window;
 struct SDL_Renderer;

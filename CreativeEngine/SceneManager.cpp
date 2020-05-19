@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "Renderer.h"
 
 #include <SDL.h>
-#include <stdexcept>
-#include <string>
+
 
 void dae::SceneManager::Render() const
 {

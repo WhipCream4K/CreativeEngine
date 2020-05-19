@@ -1,25 +1,26 @@
 #include "pch.h"
 #include "SpriteRenderer.h"
 #include "Renderer.h"
-#include "ResourceManager.h"
+#include "Sprite.h"
 
 #include <SDL.h>
+
+dae::SpriteRenderer::SpriteRenderer(const Sprite& sprite)
+	: m_Sprite{ sprite }
+{
+}
 
 void dae::SpriteRenderer::Render()
 {
 	SDL_Rect textureRect{};
-	SDL_Texture* mySDLTexture{ m_Texture->GetSDLTexture() };
-	SDL_QueryTexture(mySDLTexture, nullptr, nullptr, &textureRect.w, &textureRect.h);
-	SDL_RenderCopy(Renderer::GetInstance().GetSDLRenderer(), m_Texture->GetSDLTexture(), nullptr, &textureRect);
-}
-
-void dae::SpriteRenderer::SetSpriteTexture(const std::string& path)
-{
-	m_Texture = ResourceManager::Load<Texture2D>(path);
-}
-
-void dae::SpriteRenderer::SetSpriteTexture(std::shared_ptr<Texture2D> pTexture)
-{
-	if (pTexture)
-		m_Texture = pTexture;
+	textureRect.w = int(m_Sprite.GetWidth());
+	textureRect.h = int(m_Sprite.GetHeight());
+	
+	SDL_Texture* texture{ m_Sprite.GetSDLTexture() };
+	const auto& renderer{ Renderer::GetSDLRenderer() };
+	
+	// Render that texture
+	if (SDL_RenderCopy(renderer, texture, nullptr, &textureRect))
+		throw std::runtime_error(std::string("Failed to render : " + m_Sprite.GetTexture2D()->GetPath()) + SDL_GetError());
+	
 }

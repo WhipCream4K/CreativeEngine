@@ -6,7 +6,7 @@ namespace dae
 	class MainGame : public CreativeCore
 	{
 	public:
-		MainGame() = default;
+		MainGame();
 	};
 
 }

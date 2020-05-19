@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;$(SolutionDir)Libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;E:\OneDrive - Hogeschool West-Vlaanderen\Game DEV\2nd Year\Programming 4\CreativeEngine\Libs\glm</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -110,7 +110,7 @@ xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x86\*.dll" "$(OutDir)"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;$(SolutionDir)Libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;E:\OneDrive - Hogeschool West-Vlaanderen\Game DEV\2nd Year\Programming 4\CreativeEngine\Libs\glm</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -136,7 +136,7 @@ xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x64\*.dll" "$(OutDir)"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;$(SolutionDir)Libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;E:\OneDrive - Hogeschool West-Vlaanderen\Game DEV\2nd Year\Programming 4\CreativeEngine\Libs\glm</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -163,7 +163,7 @@ xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x86\*.dll" "$(OutDir)"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;$(SolutionDir)Libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\vld\include;E:\OneDrive - Hogeschool West-Vlaanderen\Game DEV\2nd Year\Programming 4\CreativeEngine\Libs\glm</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -184,8 +184,11 @@ xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x64\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animator.cpp" />
+    <ClCompile Include="BaseAsset.cpp" />
     <ClCompile Include="BaseComponent.cpp" />
     <ClCompile Include="CreativeCore.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="EngineContext.cpp" />
     <ClCompile Include="EngineUtils.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -210,9 +213,12 @@ xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animator.h" />
+    <ClInclude Include="BaseAsset.h" />
     <ClInclude Include="BaseComponent.h" />
     <ClInclude Include="CreativeCore.h" />
     <ClInclude Include="CreativeStructs.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="EngineContext.h" />
     <ClInclude Include="EngineUtils.h" />
     <ClInclude Include="GameObject.h" />

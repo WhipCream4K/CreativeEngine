@@ -10,12 +10,16 @@ namespace dae
 	public:
 
 		~Renderer();
-		
-		void Initialize(SDL_Window* pWindow);
-		void Destroy();
-		SDL_Renderer* GetSDLRenderer();
+
+		static SDL_Renderer* GetSDLRenderer() { return GetInstance().m_pRenderer; }
+		static void Initialize(SDL_Window* pWindow) { GetInstance().InitializeImpl(pWindow); }
+		static void Destroy() { GetInstance().DestroyImpl(); }
+
 	private:
 		SDL_Renderer* m_pRenderer;
+
+		void InitializeImpl(SDL_Window* pWindow);
+		void DestroyImpl();
 	};
 
 }

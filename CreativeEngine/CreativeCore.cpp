@@ -28,12 +28,12 @@ void dae::CreativeCore::Run()
 			SDL_WINDOW_OPENGL)};
 	
 
-		Renderer::GetInstance().Initialize(pWindow);
-		SDL_Renderer* pRenderer{ Renderer::GetInstance().GetSDLRenderer() };
+		Renderer::Initialize(pWindow);
+		SDL_Renderer* pRenderer{ Renderer::GetSDLRenderer() };
 		
 		// game loop
 		const bool& isApplicationExit{ EngineContext::IsApplicationExit() };
-		SDL_Color blue{ 173,216,230,255 };
+		const SDL_Color blue{ 173,216,230,255 };
 		while(!isApplicationExit)
 		{
 			SDL_Event windowEvent;
@@ -61,7 +61,7 @@ void dae::CreativeCore::Run()
 		}
 
 		// TODO: I personally don't like this, maybe in the future I'll change the way to destroy SDL Objects
-		Renderer::GetInstance().Destroy();
+		Renderer::Destroy();
 		SDL_DestroyWindow(pWindow);
 		SDL_Quit();
 	}

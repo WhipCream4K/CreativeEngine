@@ -6,10 +6,10 @@
 
 dae::Renderer::~Renderer()
 {
-	Destroy();
+	DestroyImpl();
 }
 
-void dae::Renderer::Initialize(SDL_Window* pWindow)
+void dae::Renderer::InitializeImpl(SDL_Window* pWindow)
 {
 	if (pWindow)
 		m_pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -17,16 +17,11 @@ void dae::Renderer::Initialize(SDL_Window* pWindow)
 		throw std::runtime_error(std::string("SDL_CreateRenderer Error: ") + SDL_GetError());
 }
 
-void dae::Renderer::Destroy()
+void dae::Renderer::DestroyImpl()
 {
 	if (m_pRenderer)
 	{
 		SDL_DestroyRenderer(m_pRenderer);
 		m_pRenderer = nullptr;
 	}
-}
-
-SDL_Renderer* dae::Renderer::GetSDLRenderer()
-{
-	return m_pRenderer;
 }

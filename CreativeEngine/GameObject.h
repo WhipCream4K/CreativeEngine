@@ -7,7 +7,8 @@
 namespace dae
 {
 	template<typename T>
-	using GameComponent = std::shared_ptr<typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type>;
+	//using GameComponent = std::shared_ptr<typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type>;
+	using GameComponent = typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type;
 	
 	class Scene;
 	class BaseComponent;
@@ -26,10 +27,10 @@ namespace dae
 		void SetActive(bool value) { m_IsActive = value; }
 
 		template<typename T>
-		constexpr GameComponent<T> GetComponent();
+		constexpr std::shared_ptr<GameComponent<T>> GetComponent();
 		
-		template<typename T>
-		constexpr GameComponent<T> CreateComponent();
+		template<typename T,typename ... Args>
+		constexpr std::shared_ptr<GameComponent<T>> CreateComponent(Args... args);
 
 		std::shared_ptr<Scene> GetScene() const { return m_pRefScene.lock(); }
 
@@ -56,22 +57,22 @@ namespace dae
 
 
 	template <typename T>
-	constexpr GameComponent<T> GameObject::GetComponent()
+	constexpr std::shared_ptr<GameComponent<T>> GameObject::GetComponent()
 	{
 		auto& type = typeid(T);
 		for (auto& component : m_pComponents)
 		{
 			if (typeid(component) == type)
-				return static_cast<std::shared_ptr<T>>(component);
+				return std::static_pointer_cast<T, BaseComponent>(component);
 		}
 
 		return nullptr;
 	}
 
-	template <typename T>
-	constexpr GameComponent<T> GameObject::CreateComponent()
+	template <typename T,typename ... Args>
+	constexpr std::shared_ptr<GameComponent<T>> GameObject::CreateComponent(Args... args)
 	{
-		std::shared_ptr<T> component{ std::make_shared<T>(new T()) };
+		std::shared_ptr<T> component{ std::make_shared<T>(new T(args)) };
 		m_pComponents.push_back(component);
 		return component; // return strong ref to this component
 	}

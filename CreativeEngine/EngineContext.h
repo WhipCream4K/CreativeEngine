@@ -1,8 +1,6 @@
 
 #pragma once
-#include <glm.hpp>
 #include <string>
-
 #include "CreativeStructs.h"
 
 namespace dae
