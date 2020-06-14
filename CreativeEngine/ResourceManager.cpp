@@ -4,7 +4,7 @@
 
 const char* dae::ResourceManager::GetResourceNameImpl(std::weak_ptr<BaseAsset> pAsset)
 {
-	auto it = m_pAssets.find(pAsset.lock()->GetName());
+	const auto it = m_pAssets.find(pAsset.lock()->GetName());
 
 	if(it != m_pAssets.end())
 	{

@@ -7,23 +7,38 @@ namespace dae
 	class Singleton
 	{
 	public:
-		static T& GetInstance();
+
+		static std::shared_ptr<T> GetInstance();
 
 		virtual ~Singleton() = default;
 		Singleton(const Singleton&) = delete;
 		Singleton(Singleton&&) noexcept = delete;
 		Singleton& operator=(const Singleton&) = delete;
 		Singleton& operator=(Singleton&&) noexcept = delete;
+
+		void Destroy() const;
 		
 	protected:
 		Singleton() = default;
+	private:
+		static std::shared_ptr<T> m_pInstance;
 	};
 
+	template<typename T>
+	std::shared_ptr<T> Singleton<T>::m_pInstance{};
+
 	template <typename T>
-	T& Singleton<T>::GetInstance()
+	std::shared_ptr<T> Singleton<T>::GetInstance()
 	{
-		static T instance{};
-		return instance;
+		if (!m_pInstance)
+			m_pInstance = std::make_shared<T>();
+		return m_pInstance;
+	}
+
+	template <typename T>
+	void Singleton<T>::Destroy() const
+	{
+		m_pInstance.reset();
 	}
 }
 

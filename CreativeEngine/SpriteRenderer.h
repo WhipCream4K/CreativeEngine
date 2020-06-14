@@ -1,30 +1,26 @@
 #pragma once
 #include "BaseComponent.h"
-#include "Texture2D.h"
-#include "Sprite.h"
 
 struct SDL_Texture;
 namespace dae
 {
+	class Sprite;
 	class Renderer;
 	class SpriteRenderer final : public BaseComponent
 	{
 	public:
 
-		SpriteRenderer(const Sprite& sprite);
+		//void SetSprite(const Sprite& sprite);
+		void SetSprite(std::weak_ptr<Sprite> sprite);
+		//const Sprite& GetSprite() const { return m_Sprite; }
+		std::shared_ptr<Sprite> GetSprite() const { return m_pSprite.lock(); }
+		void SetPivotPoint(const glm::fvec2& pivot);
 		
 	protected:
-
-		void Render() override;
-		void Start() override {}
-		void Update() override {}
-
+		void Render() const override;
 	private:
-		
-		// This component could own Texture2D on the stack but since
-		// I already delete copy constructor so it's really hard to initialize the texture
-		// maybe in the future I'll change this
-		Sprite m_Sprite;
+		//Sprite m_Sprite;
+		std::weak_ptr<Sprite> m_pSprite;
 	};
 
 }

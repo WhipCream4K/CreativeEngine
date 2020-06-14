@@ -1,17 +1,14 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <memory>
 
+#include "CreativeTypeName.h"
 #include "CreativeStructs.h"
 
 #define SCENE_COMPONENT
 
 namespace dae
 {
-	class GameObject;
 	class SceneManager;
-	class Scene : std::enable_shared_from_this<Scene>
+	class Scene : public IInternalSceneObject, public std::enable_shared_from_this<Scene>
 	{
 	public:
 		Scene(const std::string& sceneName);
@@ -22,40 +19,47 @@ namespace dae
 		Scene& operator=(const Scene&) = delete;
 		Scene& operator=(Scene&&) noexcept = delete;
 
-		void AddGameObject(std::shared_ptr<GameObject> pGameObject);
-		
-		// TODO: Make it so that you can instantiate from a class
-		// TODO: Don't forget to add the rotation of the object
-		// Instantiate the clone object of that class in the scene
-		template<typename T>
-		constexpr std::shared_ptr<typename std::enable_if<std::is_base_of_v<GameObject, T>, T>::type>
-		Instantiate(const glm::fvec3& position);
-		
+		// CreateGameObject the clone object of that class in the scene
+		template<typename T = GameObject>
+		constexpr std::shared_ptr<GameObjectType<T>> CreateGameObject(const glm::fvec3& position = glm::fvec3{ 0.0f,0.0f,0.0f },
+			const glm::fvec3& rotation = { 0.0f,0.0f,0.0f }, const glm::fvec2& scale = { 1.0f,1.0f });
+
+		// TODO: Do GameObject Instantiation (Create GameObject During Runtime)
+
 		const SceneContext& GetSceneContext() const { return m_Context; }
 
 	protected:
-		
+
 		virtual void SceneInitialize() = 0;
-		virtual void SetUpInputAction() = 0; // set up all the input that will be used in the scene
-		
+		virtual void SetupInputAction() {}
+		virtual void Update() = 0;
+		virtual void Render() const {}
+
 	private:
 
 		SceneContext m_Context;
-		std::vector<std::shared_ptr<GameObject>> m_pGameObjects;
+		//std::vector<std::shared_ptr<GameObject>> m_pGameObjects;
+		std::vector<std::shared_ptr<IInternalGameObject>> m_pGameObjects;
 		std::string m_SceneName;
 		bool m_IsInit;
 		
-		friend class SceneManager;
-		void Render();
-		void RootInitialize();
-		void RootUpdate();
+		void RootRender() const override final;
+		void RootInitialize() override final;
+		void RootUpdate() override final;
 	};
 
 	template <typename T>
-	constexpr std::shared_ptr<typename std::enable_if<std::is_base_of_v<GameObject, T>, T>::type> Scene::Instantiate(
-		const glm::fvec3& position)
+	constexpr std::shared_ptr<GameObjectType<T>> Scene::CreateGameObject(const glm::fvec3& position,
+		const glm::fvec3& rotation, const glm::fvec2& scale)
 	{
-		
+		const auto gameObject{ std::make_shared<T>() };
+		m_pGameObjects.emplace_back(gameObject);
+		std::static_pointer_cast<IInternalGameObject>(gameObject)->SetOwner(weak_from_this());
+		Transform& transform{ gameObject->GetTransform() };
+		transform.SetPosition(position);
+		transform.SetRotation(rotation);
+		transform.SetScale(scale);
+		return gameObject;
 	}
 }
 

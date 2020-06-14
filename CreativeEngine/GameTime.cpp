@@ -6,15 +6,15 @@
 dae::GameTime::GameTime()
 	: m_TotalGameTime{}
 	, m_DeltaTime{}
+	, m_SecondsPerCount{}
 	, m_TimeScale{}
+	, m_BaseTime{0}
+	, m_PausedTime{0}
+	, m_StopTime{0}
+	, m_PrevTime{0}
+	, m_CurrTime{0}
 	, m_FPS{}
 	, m_FPSTimer{}
-	, m_BaseTime{}
-	, m_PausedTime{}
-	, m_SecondsPerCount{}
-	, m_StopTime{}
-	, m_CurrTime{}
-	, m_PrevTime{}
 	, m_FPSCount{}
 	, m_IsStopped{ true }
 {
@@ -62,7 +62,7 @@ void dae::GameTime::Start()
 	if(m_IsStopped)
 	{
 		__int64 startTime;
-		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&startTime));
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&startTime));
 
 		m_PausedTime += (startTime - m_StopTime);
 
@@ -77,7 +77,7 @@ void dae::GameTime::Stop()
 	if(!m_IsStopped)
 	{
 		__int64 currTime;
-		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&currTime));
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currTime));
 
 		m_StopTime = currTime;
 		m_IsStopped = true;
@@ -87,7 +87,7 @@ void dae::GameTime::Stop()
 void dae::GameTime::Reset()
 {
 	__int64 currTime;
-	QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&currTime));
+	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currTime));
 
 	m_BaseTime = currTime;
 	m_PrevTime = currTime;

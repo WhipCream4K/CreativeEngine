@@ -2,10 +2,14 @@
 #include "MainGame.h"
 #include "SpriteTestScene.h"
 #include "SceneManager.h"
+#include "AudioTestScene.h"
 
 dae::MainGame::MainGame()
 	: CreativeCore()
 {
-	const auto pSpriteTestScene{ std::shared_ptr<SpriteTestScene>() };
-	SceneManager::GetInstance().AddScene(pSpriteTestScene);
+}
+
+void dae::MainGame::GameInitialize()
+{
+	SceneManager::AddScene(std::make_shared<AudioTestScene>());
 }

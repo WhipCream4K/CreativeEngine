@@ -2,16 +2,22 @@
 
 #include <string>
 #include <memory>
+#include <functional>
+#include <type_traits>
 
-#include "glm.hpp"
+#include <glm.hpp>
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <fmod.hpp>
 
+struct SDL_Texture;
 namespace dae
 {
 	struct Window
 	{
 		Window() :
-			width{ 640 },
-			height{ 480 },
+			width{ 1600 },
+			height{ 900 },
 			title{ "Creative Engine by Patipan Poungjun 2DAE02" },
 			aspectRatio{ float(width) / height }
 		{
@@ -37,4 +43,150 @@ namespace dae
 		std::shared_ptr<GameTime> pGameTime;
 		std::shared_ptr<InputManager> pInputManager;
 	};
+
+	struct SDLDeleter
+	{
+		void operator()(TTF_Font* pFont) const
+		{
+			if (pFont)
+			{
+				TTF_CloseFont(pFont);
+				pFont = nullptr;
+			}
+		}
+
+		void operator()(SDL_Surface* pSurface) const
+		{
+			if (pSurface)
+			{
+				SDL_FreeSurface(pSurface);
+				pSurface = nullptr;
+			}
+		}
+
+		void operator()(SDL_Texture* pTexture) const
+		{
+			if (pTexture)
+			{
+				SDL_DestroyTexture(pTexture);
+				pTexture = nullptr;
+			}
+		}
+
+		void operator()(SDL_Renderer* pRenderer) const
+		{
+			if (pRenderer)
+			{
+				SDL_DestroyRenderer(pRenderer);
+				pRenderer = nullptr;
+			}
+		}
+
+		void operator()(SDL_Window* pWindow) const
+		{
+			if (pWindow)
+			{
+				SDL_DestroyWindow(pWindow);
+				pWindow = nullptr;
+			}
+		}
+	};
+
+	struct FMODDeleter
+	{
+		void operator()(FMOD::Sound* pSound) const
+		{
+			if(pSound)
+			{
+				pSound->release();
+				pSound = nullptr;
+			}
+		}
+
+		void operator()(FMOD::System* pSystem) const
+		{
+			if(pSystem)
+			{
+				pSystem->release();
+				pSystem = nullptr;
+			}
+		}
+	};
+
+	template<typename ret, typename ...Args>
+	struct MulticastContainer
+	{
+		MulticastContainer(std::function<ret(Args...)>&& _func, Args&&... _arguments)
+			: func{ std::move(_func) }
+			, arguments{ std::move(_arguments...) }
+		{
+		}
+
+		MulticastContainer(const std::function<ret(Args...)>& _func, const Args&... _args)
+			: func{ _func }
+			, arguments{ _args... }
+		{
+		}
+
+		std::function<ret(Args...)> func;
+		std::tuple<Args...> arguments;
+	};
+
+
+	// For the purpose of defining types of function objects
+	struct IMuticastAction
+	{
+		virtual ~IMuticastAction() = default;
+		virtual void Invoke() = 0;
+	};
+
+	struct IMulticastCondition
+	{
+		virtual ~IMulticastCondition() = default;
+		virtual bool Invoke() = 0;
+	};
+
+	template<typename ...Args>
+	class Multicast : public IMuticastAction
+	{
+	public:
+
+		Multicast(std::function<void(Args...)>&& fc, Args&&... args)
+			: m_Container(std::move(fc), std::move(args...))
+		{
+		}
+
+		void Invoke() override;
+
+	private:
+		MulticastContainer<void, Args...> m_Container;
+	};
+
+	template <typename ... Args>
+	void Multicast<Args...>::Invoke()
+	{
+		std::apply(m_Container.func, m_Container.arguments);
+	}
+
+	template<typename ...Args>
+	class MulticastCondition : public IMulticastCondition
+	{
+	public:
+
+		MulticastCondition(std::function<bool(Args...)>&& fc, Args&&... args)
+			: m_Container{ std::move(fc),std::move(args...) }
+		{
+		}
+
+		bool Invoke() override;
+
+	private:
+		MulticastContainer<bool, Args...> m_Container;
+	};
+
+	template <typename ... Args>
+	bool MulticastCondition<Args...>::Invoke()
+	{
+		return std::apply(m_Container.func, m_Container.arguments);
+	}
 }

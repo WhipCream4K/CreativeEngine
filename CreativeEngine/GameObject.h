@@ -2,21 +2,18 @@
 #include <string>
 #include <vector>
 
+#include "CreativeTypeName.h"
 #include "Transform.h"
+#include "IInternalGameObject.h"
 
 namespace dae
 {
-	template<typename T>
-	//using GameComponent = std::shared_ptr<typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type>;
-	using GameComponent = typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type;
-	
 	class Scene;
 	class BaseComponent;
-	class GameObject
+	class GameObject : public IInternalGameObject, public std::enable_shared_from_this<GameObject>
 	{
-	friend class Scene;  
 	public:
-		
+
 		GameObject();
 		virtual ~GameObject() = default;
 		GameObject(const GameObject&) = delete;
@@ -26,40 +23,67 @@ namespace dae
 
 		void SetActive(bool value) { m_IsActive = value; }
 
+		template<typename T = GameObject, typename U = Scene>
+		static constexpr std::shared_ptr<GameObjectType<T>> Create(std::weak_ptr<SceneType<U>> pScene);
+
+		template<typename T = GameObject, typename U = Scene>
+		static constexpr std::shared_ptr<GameObjectType<T>> Create(SceneType<U>* pScene);
+
 		template<typename T>
 		constexpr std::shared_ptr<GameComponent<T>> GetComponent();
-		
-		template<typename T,typename ... Args>
-		constexpr std::shared_ptr<GameComponent<T>> CreateComponent(Args... args);
+
+		template<typename T>
+		constexpr std::shared_ptr<GameComponent<T>> CreateComponent();
 
 		std::shared_ptr<Scene> GetScene() const { return m_pRefScene.lock(); }
 
+		Transform& GetTransform() { return m_Transform; }
+
 	protected:
 
-		virtual void Render() const;
-		
-		virtual void Awake() {}
-		virtual void Start() = 0;
+		virtual void Render() const {}
 
-		virtual void Update() = 0;
+		virtual void Awake() {}
+		virtual void Start() {}
+
+		virtual void Update() {}
 		virtual void LateUpdate() {}
 
 	private:
 
 		Transform m_Transform;
-		std::vector<std::shared_ptr<BaseComponent>> m_pComponents;
+		std::vector<std::shared_ptr<IInternalComponent>> m_pComponents;
 		std::weak_ptr<Scene> m_pRefScene;
 		std::string m_Tag;
 		bool m_IsStatic;
 		bool m_IsActive;
+		bool m_IsInit;
 
+		void SetOwner(std::weak_ptr<Scene> pScene) override final { m_pRefScene = pScene; }
+		void RootRender() const override final;
+		void RootAwake() override final;
+		void RootStart() override final;
+		void RootUpdate() override final;
+		void RootLateUpdate() override final;
+		void RootInitialize() override final {}
 	};
 
+	template <typename T, typename U>
+	constexpr std::shared_ptr<GameObjectType<T>> GameObject::Create(std::weak_ptr<SceneType<U>> pScene)
+	{
+		return pScene.lock()->template CreateGameObject<T>();
+	}
+
+	template <typename T, typename U>
+	constexpr std::shared_ptr<GameObjectType<T>> GameObject::Create(SceneType<U>* pScene)
+	{
+		return pScene->template CreateGameObject<T>();
+	}
 
 	template <typename T>
 	constexpr std::shared_ptr<GameComponent<T>> GameObject::GetComponent()
 	{
-		auto& type = typeid(T);
+		const auto& type = typeid(T);
 		for (auto& component : m_pComponents)
 		{
 			if (typeid(component) == type)
@@ -69,11 +93,12 @@ namespace dae
 		return nullptr;
 	}
 
-	template <typename T,typename ... Args>
-	constexpr std::shared_ptr<GameComponent<T>> GameObject::CreateComponent(Args... args)
+	template <typename T>
+	constexpr std::shared_ptr<GameComponent<T>> GameObject::CreateComponent()
 	{
-		std::shared_ptr<T> component{ std::make_shared<T>(new T(args)) };
-		m_pComponents.push_back(component);
+		const auto component{ std::make_shared<T>() };
+		m_pComponents.emplace_back(component);
+		std::static_pointer_cast<IInternalComponent>(component)->SetOwner(weak_from_this());
 		return component; // return strong ref to this component
 	}
 }

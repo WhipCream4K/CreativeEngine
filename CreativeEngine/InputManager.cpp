@@ -49,11 +49,11 @@ void dae::InputManager::ReadInputs()
 			InputActionExecuteCondition(action);
 		}
 	}
-
-	for (auto group : m_InputAxisMappingGroup)
+	
+	for (auto& group : m_InputAxisMappingGroup)
 	{
 		auto& inputAxis{ group.second.GetInputAxises() };
-		for (auto axis : inputAxis)
+		for (auto& axis : inputAxis)
 		{
 			InputAxisExecuteCondition(axis);
 		}

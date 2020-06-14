@@ -42,6 +42,7 @@ namespace glm
 		
 			union
 			{
+#pragma warning(disable : 4201)
 				struct{ T x, y; };
 				struct{ T r, g; };
 				struct{ T s, t; };

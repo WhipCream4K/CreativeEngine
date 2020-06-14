@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <SDL.h>
+#include "SDL.h"
 #include <vector>
 #include <glm.hpp>
 
@@ -40,7 +40,7 @@ namespace dae
 		Key()
 			: device{ Device::D_Keyboard }
 			, keyCode{ -1 }
-			, mouseKey{ MouseKey::MK_None } // set default to 6 because SDL_BUTTON_MOUSE has only 5 buttons
+			, mouseKey{ MouseKey::MK_None }
 		{
 		}
 
