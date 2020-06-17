@@ -5,34 +5,29 @@
 
 void dae::Animator::Update()
 {
-	const auto& transitions = m_CurrentClip.lock()->GetTransitions();
-	bool transitionTriggered = false;
-	const AnimTransition* triggeredTransition{};
-
-	for (const auto& transition : transitions)
+	const auto sharedTemp = m_CurrentClip.lock();
+	
+	if(sharedTemp)
 	{
-		transitionTriggered = transition.IsTriggered();
-		if (transitionTriggered)
+		const auto& transitions = sharedTemp->GetTransitions();
+		bool transitionTriggered = false;
+		const AnimTransition* triggeredTransition{};
+
+		for (const auto& transition : transitions)
 		{
-			triggeredTransition = &transition;
-			break;
+			transitionTriggered = transition.IsTriggered();
+			if (transitionTriggered)
+			{
+				triggeredTransition = &transition;
+				break;
+			}
 		}
+
+		if (transitionTriggered)
+			m_CurrentClip = triggeredTransition->GetTargetState();
+
+		m_CurrentClip.lock()->Update();
 	}
-
-	if (transitionTriggered)
-		m_CurrentClip = triggeredTransition->GetTargetState();
-
-	m_CurrentClip.lock()->Update();
-	//if (transitionTriggerd)
-	//{
-	//	const auto& targetState = triggeredTransition->GetTargetState();
-	//	targetState->RunEntryActions();
-
-	//	// switch
-	//	m_CurrentState = targetState;
-	//}
-	//else
-	//	currentState->RunActions();
 }
 
 void dae::Animator::AddAnimationClip(std::shared_ptr<AnimationClip> clip)

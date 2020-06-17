@@ -198,6 +198,8 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="AnimTransition.cpp" />
     <ClCompile Include="AudioClip.cpp" />
+    <ClCompile Include="CharacterController.cpp" />
+    <ClCompile Include="CreativeStructs.cpp" />
     <ClCompile Include="FMODAudioService.cpp" />
     <ClCompile Include="AudioSource.cpp" />
     <ClCompile Include="BaseAsset.cpp" />
@@ -211,17 +213,19 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="EngineAsset.cpp" />
     <ClCompile Include="EngineContext.cpp" />
     <ClCompile Include="EngineUtils.cpp" />
-    <ClCompile Include="FontAsset.cpp" />
     <ClCompile Include="FSMState.cpp" />
     <ClCompile Include="FSMTransition.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="IAudioService.cpp" />
+    <ClCompile Include="IDrawable.cpp" />
+    <ClCompile Include="IFontEntity.cpp" />
     <ClCompile Include="IInternalComponent.cpp" />
     <ClCompile Include="IInternalGameObject.cpp" />
     <ClCompile Include="IInternalSceneObject.cpp" />
     <ClCompile Include="InputComponent.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="ITextureEntity.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -230,16 +234,18 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     </ClCompile>
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderingComponent.cpp" />
-    <ClCompile Include="RenderTexture.cpp" />
+    <ClCompile Include="RenderInfo.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="SDLFontData.cpp" />
+    <ClCompile Include="SDLTextureData.cpp" />
     <ClCompile Include="ServiceLocator.cpp" />
     <ClCompile Include="Singleton.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
-    <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +253,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="Animator.h" />
     <ClInclude Include="AnimTransition.h" />
     <ClInclude Include="AudioClip.h" />
+    <ClInclude Include="CharacterController.h" />
     <ClInclude Include="FMODAudioService.h" />
     <ClInclude Include="AudioSource.h" />
     <ClInclude Include="BaseAsset.h" />
@@ -262,30 +269,34 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="EngineAsset.h" />
     <ClInclude Include="EngineContext.h" />
     <ClInclude Include="EngineUtils.h" />
-    <ClInclude Include="FontAsset.h" />
     <ClInclude Include="FSMState.h" />
     <ClInclude Include="FSMTransition.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTime.h" />
     <ClInclude Include="IAudioService.h" />
+    <ClInclude Include="IDrawable.h" />
+    <ClInclude Include="IFontEntity.h" />
     <ClInclude Include="IInternalComponent.h" />
     <ClInclude Include="IInternalGameObject.h" />
     <ClInclude Include="IInternalSceneObject.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="ITextureEntity.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderingComponent.h" />
-    <ClInclude Include="RenderTexture.h" />
+    <ClInclude Include="RenderInfo.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="SDLFontData.h" />
+    <ClInclude Include="SDLTextureData.h" />
     <ClInclude Include="ServiceLocator.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="TextRenderer.h" />
-    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

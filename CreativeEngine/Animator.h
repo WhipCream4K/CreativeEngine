@@ -7,7 +7,7 @@ namespace dae
 	class Animator : public BaseComponent
 	{
 	public:
-
+		// TODO: Animator throw exception when there's no animation clip
 		void Update() override;
 		void AddAnimationClip(std::shared_ptr<AnimationClip> clip);
 

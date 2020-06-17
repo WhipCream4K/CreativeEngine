@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "AnimationClip.h"
-
-#include "ResourceManager.h"
 #include "Scene.h"
 
 void dae::AnimTracker::Update(float deltaTime,uint32_t sampleRate)
@@ -49,19 +47,17 @@ std::shared_ptr<dae::AnimationClip> dae::AnimationClip::Create(std::weak_ptr<Gam
 }
 
 void dae::AnimationClip::AddProperty(std::weak_ptr<SpriteRenderer> spriteRenderer,
-	const std::vector<std::shared_ptr<Sprite>>& sprites)
+	const std::vector<std::shared_ptr<dae::Sprite>>& sprites)
 {
 	AnimTracker tracker{ uint32_t(sprites.size())};
 	m_ObjectProperties.emplace_back(tracker);
 	auto& temp = m_ObjectProperties.back();
 	const auto changeSprite = [&sprites, &temp](std::weak_ptr<SpriteRenderer> renderer)
 	{
-		//ResourceManager::GetInstance();
 		renderer.lock()->SetSprite(sprites[temp.m_CurrentKeyFrame]);
 	};
 
 	temp.SetExecuteFunction(std::make_shared<AnimFunc<SpriteRenderer>>(changeSprite, spriteRenderer));
-	
 }
 
 void dae::AnimationClip::Update()

@@ -8,9 +8,7 @@ namespace dae
 	{
 	public:
 
-		AudioClip(const std::string& assetPath, const std::string& assetName);
-		
-		static std::shared_ptr<AudioClip> Create(const std::string& assetPath, const std::string& assetName);
+		AudioClip(const std::string& assetPath, const std::string& assetName);		
 	};
 }
 

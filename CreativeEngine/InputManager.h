@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include "SDL.h"
 #include <vector>
-#include <glm.hpp>
 
 namespace dae
 {
@@ -126,6 +125,7 @@ namespace dae
 		std::vector<InputAxis> m_InputAxisLists;
 	};
 
+	class InputComponent;
 	class InputManager final
 	{
 	public:
@@ -140,11 +140,14 @@ namespace dae
 
 		// Captures all the player inputs
 		void ReadInputs();
+		auto RegisterObserver(std::weak_ptr<InputComponent>&& inputComponent) -> void;
 
 	private:
 
 		std::unordered_map<std::string, InputActionMappingGroup> m_InputActionMappingGroup;
 		std::unordered_map<std::string, InputAxisMappingGroup> m_InputAxisMappingGroup;
+
+		std::vector<std::weak_ptr<InputComponent>> m_Observers;
 
 		void InputActionExecuteCondition(InputAction& input) const;
 		void InputAxisExecuteCondition(InputAxis& input) const;

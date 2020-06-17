@@ -13,6 +13,8 @@ namespace dae
 	public:
 		
 		FontAsset(const std::string& assetPath, const std::string& assetName);
+
+		static std::shared_ptr<FontAsset> Create(const std::string& assetPath, const std::string& assetName);
 		
 		// TODO: Probably update this to support parsing font styles
 		// SDL needs to load new font if you want to increase the size of the text

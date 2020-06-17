@@ -96,7 +96,7 @@ namespace dae
 	{
 		void operator()(FMOD::Sound* pSound) const
 		{
-			if(pSound)
+			if (pSound)
 			{
 				pSound->release();
 				pSound = nullptr;
@@ -105,12 +105,23 @@ namespace dae
 
 		void operator()(FMOD::System* pSystem) const
 		{
-			if(pSystem)
+			if (pSystem)
 			{
 				pSystem->release();
 				pSystem = nullptr;
 			}
 		}
+	};
+
+	class Transform;
+	struct RenderTransform
+	{
+		RenderTransform() = default;
+		RenderTransform(const Transform& objTransform);
+
+		glm::fvec2 position;
+		glm::fvec2 scale;
+		float rotation{};
 	};
 
 	template<typename ret, typename ...Args>
@@ -156,9 +167,15 @@ namespace dae
 		{
 		}
 
+		//Multicast(const std::function<void(Args...)>& func, Args&&... args)
+		//	: m_Container(func, std::move(args))
+		//{
+		//}
+
 		void Invoke() override;
 
 	private:
+
 		MulticastContainer<void, Args...> m_Container;
 	};
 

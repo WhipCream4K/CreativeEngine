@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include <vector>
 #include <SDL.h>
 
@@ -10,17 +11,30 @@ namespace dae
 {
 	class SpriteRenderer;
 	class TextRenderer;
+	class ITextureEntity;
+	class IDrawable;
 
-	struct RenderSurface
+	//enum class SamplerState
+//{
+//	SS_Pixel,
+//	SS_Linear,
+//	SS_Anisotropic
+//};
+
+	struct RenderTexture
 	{
-		std::weak_ptr<SDL_Texture> renderTexture;
-		SDL_Rect surfaceRect;
-		SDL_Rect srcRect; // for when the entire texture doesn't get render
-		SDL_Point pivot;
-		float rotation;
+		RenderTexture(std::weak_ptr<IDrawable> && object, const RenderTransform& _transform, float _depth)
+			: transform(_transform)
+			, drawObject{ std::move(object) }
+			, depth{ _depth }
+		{
+		}
+
+		RenderTransform transform;
+		std::weak_ptr<IDrawable> drawObject;
 		float depth;
 	};
-	
+
 	class Renderer final : public Singleton<Renderer>
 	{
 
@@ -34,47 +48,57 @@ namespace dae
 
 		// Get all the render component in the scene, sort them out by the order
 		// then render all the target with that order
-		static void AssignRenderQueue(const RenderTexture& renderTexture, const glm::fvec2& pivot,const glm::fvec2& position,const glm::fvec2& scale, float rotation, float depth)
+		static void AssignRenderQueue(const RenderInfo& renderTexture, const glm::fvec2& pivot, const glm::fvec2& position, const glm::fvec2& scale, float rotation, float depth)
 		{
-			GetInstance()->AssignRenderQueueImpl(renderTexture, pivot,position, scale,rotation, depth);
+			GetInstance()->AssignRenderQueueImpl(renderTexture, pivot, position, scale, rotation, depth);
 		}
 
-		static void AssignRenderQueue(const RenderTexture& renderTexture, const glm::fvec4& boundingBox,const glm::fvec2& pivot,const glm::fvec2& position,
-		const glm::fvec2& scale,float rotation,float depth)
+		static void AssignRenderQueue(const RenderInfo& renderTexture, std::weak_ptr<ITextureEntity> textureEntity, float depth)
 		{
-			GetInstance()->AssignRenderQueueImpl(renderTexture, boundingBox,pivot, position, scale, rotation, depth);
+			GetInstance()->AssignRenderQueueImpl(renderTexture, std::move(textureEntity), depth);
+		}
+
+		static void AssignRenderQueue(std::weak_ptr<IDrawable>&& drawObject, const RenderTransform& transform, float depth)
+		{
+			GetInstance()->AssignRenderQueueImpl(std::move(drawObject), transform, depth);
+		}
+
+		static void AssignRenderQueue(std::shared_ptr<const IDrawable>&& drawObject,const RenderTransform& transform,float depth)
+		{
+			GetInstance()->AssignRenderQueueImpl(std::move(drawObject), transform, depth);
 		}
 		
 		/**
 		 * \brief
 		 * This will render the render texture in front of everything at the given position and rotation
-		 * \param renderTexture 
-		 * \param position 
-		 * \param dimension 
-		 * \param rotation 
+		 * \param renderTexture
+		 * \param position
+		 * \param dimension
+		 * \param rotation
 		 */
-		static void RenderImmediate(const RenderTexture& renderTexture, const glm::fvec2& position, const glm::fvec2& dimension, float rotation)
+		static void RenderImmediate(const RenderInfo& renderTexture, const glm::fvec2& position, const glm::fvec2& dimension, float rotation)
 		{
 			GetInstance()->RenderImmediateImpl(renderTexture, position, dimension, rotation);
 		}
 
-		~Renderer();
-		
 	private:
 
 		static void Render() { GetInstance()->RenderImpl(); }
 		static void DebugRender() { GetInstance(); }
-		static void Initialize(std::weak_ptr<SDL_Window> pWindow) { GetInstance()->InitializeImpl(pWindow); }
+		static void Initialize(std::weak_ptr<SDL_Window> pWindow) { GetInstance()->InitializeImpl(std::move(pWindow)); }
 
 		std::shared_ptr<SDL_Renderer> m_pRenderer;
-		std::vector<RenderSurface> m_RenderSurfaces;
+		std::vector<RenderTexture> m_RenderTexture;
 
 		void RenderImpl();
-		void RenderImmediateImpl(const RenderTexture& renderTexture, const glm::fvec2& position, const glm::fvec2& dimension, float rotation);
+		void RenderImmediateImpl(const RenderInfo& renderTexture, const glm::fvec2& position, const glm::fvec2& dimension, float rotation);
 		void InitializeImpl(std::weak_ptr<SDL_Window> pWindow);
-		void AssignRenderQueueImpl(const RenderTexture& renderTexture, const glm::fvec2& pivot, const glm::fvec2& position, const glm::fvec2& scale, float rotation, float depth);
-		void AssignRenderQueueImpl(const RenderTexture& renderTexture, const glm::fvec4& boundingBox, const glm::fvec2& pivot,const glm::fvec2& position,
+		void AssignRenderQueueImpl(const RenderInfo& renderTexture, const glm::fvec2& pivot, const glm::fvec2& position, const glm::fvec2& scale, float rotation, float depth);
+		void AssignRenderQueueImpl(const RenderInfo& renderTexture, std::weak_ptr<ITextureEntity> textureEntity, float depth);
+		void AssignRenderQueueImpl(const RenderInfo& renderTexture, const glm::fvec4& boundingBox, const glm::fvec2& pivot, const glm::fvec2& position,
 			const glm::fvec2& scale, float rotation, float depth);
+		void AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const RenderTransform& transform, float depth);
+		void AssignRenderQueueImpl(std::shared_ptr<const IDrawable>&& drawObject, const RenderTransform& transform, float depth);
 	};
 
 }

@@ -1,38 +1,249 @@
 #pragma once
 #include "BaseComponent.h"
 #include "InputManager.h"
-#include <functional>
 
 namespace dae
 {
-	//template<typename T>
-	//using ActionFunc = void(T::*)();
+	template<typename ...Args>
+	constexpr bool none_void_check = (!std::is_void_v<Args> && ...);
+
+	template<typename ...Args>
+	using all_none_void = std::enable_if_t<(none_void_check<Args...>)>;
 	
-	class InputComponent : public BaseComponent
+	struct ActionHandlerSignature
+	{
+		template<typename T>
+		using ObjectFunctionDelegate = void(T::*)();
+		template<typename T, typename ...Args>
+		using ObjectVariadicDelegate = void(T::*)(all_none_void<Args...>);
+	};
+
+	struct AxisHandlerSignature
+	{
+		template<typename T>
+		using ObjectFunctionDelegate = void(T::*)(float);
+		template<typename T, typename ...Args>
+		using ObjectVariadicDelegate = void(T::*)(float, std::enable_if_t<(sizeof...(Args) > 0), size_t>);
+	};
+
+	template<typename T, typename ...Args>
+	using VariadicFuncPtr = void(T::*)(Args...);
+	template<typename T>
+	using FuncPtr = void(T::*)();
+
+	struct ActionHandle
+	{
+		ActionHandle(const std::string& _actionName, InputEvent _inputEvent, ActionFunc&& func)
+			: action(std::move(func))
+			, actionName{ _actionName }
+			, inputEvent{ _inputEvent }
+			, isActive{}
+		{
+		}
+
+		ActionFunc action;
+		std::string actionName;
+		InputEvent inputEvent;
+		bool isActive;
+	};
+
+	struct AxisHandle
+	{
+		AxisHandle(const std::string& _axisName, ActionFunc&& func)
+			: action(std::move(func))
+			, axisName{ _axisName }
+			, isActive{}
+		{
+		}
+
+		ActionFunc action;
+		std::string_view axisName;
+		bool isActive;
+	};
+
+	template<typename UserClass, typename ...Args>
+	struct DelegateCallbackWithParams : IMuticastAction
+	{
+		DelegateCallbackWithParams(void(UserClass::* funcName)(Args...), std::weak_ptr<UserClass>&& _caller, Args&&... args)
+			: funcPtr(funcName)
+			, caller(std::move(caller))
+			, arguments{ std::move(args) }
+		{
+		}
+
+		void Invoke() override;
+
+		VariadicFuncPtr<UserClass, Args...> funcPtr;
+		std::weak_ptr<UserClass> caller;
+		std::tuple<Args...> arguments;
+	};
+
+	template<typename UserClass>
+	struct DelegateCallbackNoParams : IMuticastAction
+	{
+		DelegateCallbackNoParams(void(UserClass::* funcName)(), std::weak_ptr<UserClass>&& _caller)
+			: funcPtr(funcName)
+			, caller{ std::move(_caller) }
+		{
+		}
+
+		void Invoke() override;
+
+		FuncPtr<UserClass> funcPtr;
+		std::weak_ptr<UserClass> caller;
+	};
+
+	template <typename UserClass, typename ... Args>
+	void DelegateCallbackWithParams<UserClass, Args...>::Invoke()
+	{
+		auto temp{ caller.lock() };
+		if (temp)
+			((*temp).*funcPtr)(arguments...);
+	}
+
+	template <typename UserClass>
+	void DelegateCallbackNoParams<UserClass>::Invoke()
+	{
+		auto temp{ caller.lock() };
+		if (temp)
+			((*temp).*funcPtr)();
+	}
+
+
+	template<typename UserClass, typename ...Args>
+	struct InputAxisWithParamsCallback : IMuticastAction
+	{
+		InputAxisWithParamsCallback(void(UserClass::* funcName)(float, Args...), std::weak_ptr<UserClass>&& _caller, Args&&... args)
+			: funcPtr{ funcName }
+			, caller{ std::move(_caller) }
+			, arguments{ std::move(args...) }
+			, axisValue{}
+		{
+		}
+
+		void Invoke() override;
+
+		VariadicFuncPtr<UserClass, float, Args...> funcPtr;
+		std::weak_ptr<UserClass> caller;
+		std::tuple<Args...> arguments;
+		float axisValue;
+	};
+
+	template <typename UserClass, typename ... Args>
+	void InputAxisWithParamsCallback<UserClass, Args...>::Invoke()
+	{
+		auto temp{ caller.lock() };
+		if (temp)
+			(temp->*funcPtr)(axisValue, arguments...);
+	}
+
+	template<typename UserClass>
+	struct InputAxisNoParamsCallback : IMuticastAction
+	{
+		InputAxisNoParamsCallback(void(UserClass::* funcName)(float), std::weak_ptr<UserClass>&& _caller)
+			: funcPtr{ funcName }
+			, caller{ std::move(_caller) }
+			, axisValue{}
+		{
+		}
+
+		void Invoke() override;
+		
+		FuncPtr<UserClass> funcPtr;
+		std::weak_ptr<UserClass> caller;
+		float axisValue;
+	};
+
+	template <typename UserClass>
+	void InputAxisNoParamsCallback<UserClass>::Invoke()
+	{
+		auto temp{ caller.lock() };
+		if (temp)
+			((*temp).*funcPtr)(axisValue);
+	}
+
+
+	class InputComponent final : public BaseComponent
 	{
 	public:
 
-		// TODO: Please finish this
-		//template<typename UserClass>
-		//void BindAction(const std::string& keyName, InputEvent inputEvent, std::weak_ptr<UserClass> pGameObject, ActionFunc<UserClass> func);
+		void Awake() override;
 
-		//template<class UserClass>
-		//void BindAction(const std::string& keyName, InputEvent inputEvent, UserClass* pGameObject, ActionFunc<UserClass> func);
-	
+		// Action mapping
+		template<typename UserClass>
+		constexpr auto BindAction(const std::string& actionName, InputEvent inputEvent,
+			std::weak_ptr<GameObjectType<UserClass>>&& caller,
+			ActionHandlerSignature::ObjectFunctionDelegate<UserClass> funcPtr) -> void;
+
+		template<typename UserClass, typename ...Args>
+		constexpr auto BindAction(const std::string& actionName, InputEvent inputEvent,
+			std::weak_ptr<GameObjectType<UserClass>>&& caller,
+			ActionHandlerSignature::ObjectVariadicDelegate<UserClass, Args...> funcPtr,
+			Args&&... args) -> void;
+
+		// Axis mapping
+		template<typename UserClass>
+		constexpr auto BindAxis(const std::string& axisName,
+			std::weak_ptr<GameObjectType<UserClass>>&& caller,
+			AxisHandlerSignature::ObjectFunctionDelegate<UserClass> funcPtr) -> void;
+
+		template<typename UserClass, typename ...Args>
+		constexpr auto BindAxis(const std::string& axisName,
+			std::weak_ptr<GameObjectType<UserClass>>&& caller,
+			AxisHandlerSignature::ObjectVariadicDelegate<UserClass, Args...> funcPtr,
+			Args&&... args) -> void;
+
+		constexpr auto GetActionHandles() const noexcept -> const std::unordered_map<std::string, ActionHandle>& { return m_ActionHandle; }
+		constexpr auto GetAxisHandles() const noexcept -> const std::unordered_map<std::string, AxisHandle>& { return m_AxisHandle; }
+
 	protected:
+
 		void Update() override;
+
+	private:
+
+		std::unordered_map<std::string, ActionHandle> m_ActionHandle;
+		std::unordered_map<std::string, AxisHandle> m_AxisHandle;
 	};
 
-	//template <typename UserClass>
-	//void InputComponent::BindAction(const std::string& keyName, InputEvent inputEvent,
-	//	std::weak_ptr<UserClass> pGameObject, ActionFunc<UserClass> func)
-	//{
-	//}
+	template <typename UserClass>
+	constexpr auto InputComponent::BindAction(const std::string& actionName, InputEvent inputEvent,
+		std::weak_ptr<GameObjectType<UserClass>>&& caller,
+		ActionHandlerSignature::ObjectFunctionDelegate<UserClass> funcPtr) -> void
+	{
+		auto callback{ std::make_shared<DelegateCallbackNoParams<UserClass>>(funcPtr,std::move(caller)) };
+		ActionHandle handle{ actionName,inputEvent,std::move(callback) };
+		m_ActionHandle.try_emplace(actionName, std::move(handle));
+	}
 
-	//template <class UserClass>
-	//void InputComponent::BindAction(const std::string& keyName, InputEvent inputEvent, UserClass* pGameObject,
-	//	ActionFunc<UserClass> func)
-	//{
-	//}
+	template <typename UserClass, typename ... Args>
+	constexpr auto InputComponent::BindAction(const std::string& actionName, InputEvent inputEvent,
+		std::weak_ptr<GameObjectType<UserClass>>&& caller,
+		ActionHandlerSignature::ObjectVariadicDelegate<UserClass, Args...> funcPtr, Args&&... args) -> void
+	{
+		auto callback{ std::make_shared<DelegateCallbackWithParams<UserClass,Args...>>(funcPtr,std::move(caller),std::move(args...)) };
+		ActionHandle handle{ actionName,inputEvent,std::move(callback) };
+		m_ActionHandle.try_emplace(actionName, std::move(handle));
+	}
+
+	template <typename UserClass>
+	constexpr auto InputComponent::BindAxis(const std::string& axisName,
+		std::weak_ptr<GameObjectType<UserClass>>&& caller,
+		AxisHandlerSignature::ObjectFunctionDelegate<UserClass> funcPtr) -> void
+	{
+		auto callback{ std::make_shared<InputAxisNoParamsCallback<UserClass>>(funcPtr,std::move(caller)) };
+		AxisHandle handle{ axisName,std::move(callback) };
+		m_AxisHandle.try_emplace(axisName, std::move(handle));
+	}
+
+	template <typename UserClass, typename ... Args>
+	constexpr auto InputComponent::BindAxis(const std::string& axisName,
+		std::weak_ptr<GameObjectType<UserClass>>&& caller,
+		AxisHandlerSignature::ObjectVariadicDelegate<UserClass, Args...> funcPtr, Args&&... args) -> void
+	{
+		auto callback{ std::make_shared<InputAxisWithParamsCallback<UserClass,Args...>>(funcPtr,std::move(caller),std::move(args...)) };
+		AxisHandle handle{ axisName,std::move(callback) };
+		m_AxisHandle.try_emplace(axisName, std::move(handle));
+	}
 }
 

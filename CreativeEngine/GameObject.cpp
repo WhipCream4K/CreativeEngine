@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "GameObject.h"
-#include "InputComponent.h"
 
 dae::GameObject::GameObject()
 	: m_Transform{}
@@ -9,7 +8,7 @@ dae::GameObject::GameObject()
 	, m_IsActive{ true }
 	, m_IsInit{}
 {
-	static_cast<IInternalComponent*>(&m_Transform)->SetOwner(weak_from_this());
+	static_cast<IInternalComponent*>(&m_Transform)->RegisterOwner(GetShared<GameObject>());
 }
 
 void dae::GameObject::RootRender() const

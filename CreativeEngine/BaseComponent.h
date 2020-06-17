@@ -7,11 +7,10 @@
 
 namespace dae
 {
-	class Transform;
 	class GameObject;
 	class BaseComponent : public IInternalComponent, public std::enable_shared_from_this<BaseComponent>
 	{
-		
+
 	public:
 
 		BaseComponent();
@@ -24,43 +23,59 @@ namespace dae
 		void SetActive(bool value) { m_IsActive = value; }
 		bool IsActive() const { return m_IsActive; }
 
-		std::shared_ptr<GameObject> GetGameObject() const { return m_pGameObject.lock(); }
+		std::shared_ptr<GameObject> GetGameObject() const;
 
 		template<typename T>
-		constexpr std::shared_ptr<const GameComponent<T>> GetShared() const;
+		constexpr auto GetShared() const noexcept -> std::shared_ptr<GameComponent<const T>>;
 
 		template<typename T>
-		constexpr std::shared_ptr<GameComponent<T>> GetShared();
-		
+		constexpr auto GetShared() noexcept -> std::shared_ptr<GameComponent<T>>;
+
+		auto GetScene() const noexcept->std::shared_ptr<Scene>;
+
 	protected:
-		
-		void Render() const override{}
-		
+
+		void Render() const override {}
+
 		void Awake() override {}
 		void Start() override {}
-		
+
 		void Update() override {}
 		void LateUpdate() override {}
 
+		void RegisterOwner(std::weak_ptr<GameObject>&& pOwner) override final { m_pGameObject = std::move(pOwner); }
 
 	private:
-		
+
 		std::weak_ptr<GameObject> m_pGameObject;
 		bool m_IsActive;
-		
-		void SetOwner(std::weak_ptr<GameObject> pOwner) override final{ m_pGameObject = std::move(pOwner); }
+
 	};
 
 	template <typename T>
-	constexpr std::shared_ptr<const GameComponent<T>> BaseComponent::GetShared() const
+	constexpr auto BaseComponent::GetShared() const noexcept -> std::shared_ptr<GameComponent<const T>>
 	{
-		return std::static_pointer_cast<const T>(shared_from_this());
+		std::shared_ptr<const BaseComponent> temp{ this,[](const BaseComponent*) {} };
+		return std::static_pointer_cast<const T>(temp);
 	}
 
 	template <typename T>
-	constexpr std::shared_ptr<GameComponent<T>> BaseComponent::GetShared()
+	constexpr auto BaseComponent::GetShared() noexcept -> std::shared_ptr<GameComponent<T>>
 	{
-		return std::static_pointer_cast<T>(shared_from_this());
+		std::shared_ptr<BaseComponent> temp{ this,[](BaseComponent*){} };
+		return std::static_pointer_cast<T>(temp);
 	}
+
+	//template <typename T>
+	//constexpr std::shared_ptr<const GameComponent<T>> BaseComponent::GetShared() const
+	//{
+	//	return std::static_pointer_cast<const T>(shared_from_this());
+	//}
+
+	//template <typename T>
+	//constexpr std::shared_ptr<GameComponent<T>> BaseComponent::GetShared()
+	//{
+	//	return std::static_pointer_cast<T>(shared_from_this());
+	//}
 }
 

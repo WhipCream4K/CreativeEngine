@@ -54,11 +54,6 @@ namespace dae
 
 		AnimationClip(std::weak_ptr<GameObject> pGameObject);
 
-		AnimationClip(const AnimationClip&) = delete;
-		AnimationClip& operator=(const AnimationClip&) = delete;
-		AnimationClip(AnimationClip&&) = delete;
-		AnimationClip& operator=(AnimationClip&&) = delete;
-
 		static std::shared_ptr<AnimationClip> Create(std::weak_ptr<GameObject> pGameObject);
 
 		// Only supports SpriteRenderer for now

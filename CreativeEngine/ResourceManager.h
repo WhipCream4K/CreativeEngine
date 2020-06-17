@@ -8,7 +8,7 @@ namespace dae
 	class EngineAsset;
 	class BaseAsset;
 	template<typename T>
-	using Asset = typename std::enable_if<std::is_base_of_v<BaseAsset, T>, T>::type;
+	using Asset = typename std::enable_if<std::is_base_of_v<BaseAsset,T>, T>::type;
 	template<typename T>
 	using InAsset = std::enable_if_t<std::is_base_of_v<EngineAsset, T>, T>;
 
@@ -23,11 +23,11 @@ namespace dae
 			return GetInstance()->LoadImpl<Asset<T>>(assetPath, assetName);
 		}
 
-		template<typename T>
-		constexpr static std::shared_ptr<Asset<T>> Load(std::shared_ptr<Asset<T>> asset)
-		{
-			return GetInstance()->LoadImpl<Asset<T>>(asset);
-		}
+		//template<typename T>
+		//constexpr static std::shared_ptr<Asset<T>> Load(std::shared_ptr<Asset<T>> asset)
+		//{
+		//	return GetInstance()->LoadImpl<Asset<T>>(asset);
+		//}
 
 		static const char* GetResourceName(std::weak_ptr<BaseAsset> pAsset)
 		{
@@ -40,10 +40,16 @@ namespace dae
 			return GetInstance()->GetAssetImpl<Asset<T>>(assetName);
 		}
 
+		//template<typename T = EngineAsset>
+		//constexpr static std::shared_ptr<InAsset<T>> Store(std::shared_ptr<InAsset<T>> engineAsset)
+		//{
+		//	return GetInstance()->StoreImpl(engineAsset);
+		//}
+
 		template<typename T = EngineAsset>
-		constexpr static void Store(std::shared_ptr<InAsset<T>> engineAsset)
+		constexpr static std::shared_ptr<InAsset<T>> Store(const std::string& name)
 		{
-			return GetInstance()->StoreImpl(engineAsset);
+			return GetInstance()->StoreImpl(name);
 		}
 
 	private:
@@ -56,8 +62,10 @@ namespace dae
 		const char* GetResourceNameImpl(std::weak_ptr<BaseAsset> pAsset);
 		template<typename T>
 		std::shared_ptr<T> GetAssetImpl(const std::string& assetName);
+		//template<typename T>
+		//std::shared_ptr<T> StoreImpl(std::shared_ptr<T> engineAsset);
 		template<typename T>
-		void StoreImpl(std::shared_ptr<T> engineAsset);
+		std::shared_ptr<T> StoreImpl(const std::string& name);
 
 		// Data members
 		std::unordered_map<std::string, std::shared_ptr<BaseAsset>> m_pAssets;
@@ -99,14 +107,28 @@ namespace dae
 	}
 
 
-	template <typename T>
-	void ResourceManager::StoreImpl(std::shared_ptr<T> engineAsset)
-	{
-		const std::string& assetName = engineAsset->GetName();
-		const auto& resource{ m_pEngineAssets.find(assetName) };
+	//template <typename T>
+	//std::shared_ptr<T> ResourceManager::StoreImpl(std::shared_ptr<T> engineAsset)
+	//{
+	//	const std::string& assetName = engineAsset->GetName();
+	//	const auto& resource{ m_pEngineAssets.find(assetName) };
 
-		if (resource == m_pEngineAssets.end())
-			m_pEngineAssets.try_emplace(assetName, engineAsset);
+	//	if (resource == m_pEngineAssets.end())
+	//		m_pEngineAssets.try_emplace(assetName, engineAsset);
+
+	//	return resource->second;
+	//}
+
+	template <typename T>
+	std::shared_ptr<T> ResourceManager::StoreImpl(const std::string& name)
+	{
+		const auto& resource = m_pEngineAssets.find(name);
+		if (resource != m_pEngineAssets.end())
+			return std::static_pointer_cast<T>(resource->second);
+
+		std::shared_ptr<T> newEngineAsset{ std::make_shared<T>(name) };
+		m_pEngineAssets.try_emplace(name, newEngineAsset);
+		return newEngineAsset;
 	}
 }
 

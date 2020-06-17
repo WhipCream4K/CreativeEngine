@@ -1,10 +1,8 @@
 #pragma once
-#include <string>
-#include <vector>
 
-#include "CreativeTypeName.h"
-#include "Transform.h"
+//#include "CreativeTypeName.h"
 #include "IInternalGameObject.h"
+#include "Transform.h"
 
 namespace dae
 {
@@ -35,9 +33,16 @@ namespace dae
 		template<typename T>
 		constexpr std::shared_ptr<GameComponent<T>> CreateComponent();
 
+		template<typename T>
+		constexpr auto GetShared() noexcept ->std::shared_ptr<GameObjectType<T>>;
+
+		template<typename T>
+		constexpr auto GetShared() const noexcept ->std::shared_ptr<GameObjectType<const T>>;
+
 		std::shared_ptr<Scene> GetScene() const { return m_pRefScene.lock(); }
 
-		Transform& GetTransform() { return m_Transform; }
+		constexpr auto GetTransform() -> Transform& { return m_Transform; }
+		
 
 	protected:
 
@@ -49,6 +54,8 @@ namespace dae
 		virtual void Update() {}
 		virtual void LateUpdate() {}
 
+		void RegisterOwner(std::weak_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
+		
 	private:
 
 		Transform m_Transform;
@@ -59,7 +66,6 @@ namespace dae
 		bool m_IsActive;
 		bool m_IsInit;
 
-		void SetOwner(std::weak_ptr<Scene> pScene) override final { m_pRefScene = pScene; }
 		void RootRender() const override final;
 		void RootAwake() override final;
 		void RootStart() override final;
@@ -98,8 +104,23 @@ namespace dae
 	{
 		const auto component{ std::make_shared<T>() };
 		m_pComponents.emplace_back(component);
-		std::static_pointer_cast<IInternalComponent>(component)->SetOwner(weak_from_this());
+		const auto owner{ GetShared<GameObject>() };
+		std::static_pointer_cast<IInternalComponent>(component)->RegisterOwner(std::shared_ptr<GameObject>(this,[](GameObject*){}));
 		return component; // return strong ref to this component
+	}
+
+	template <typename T>
+	constexpr auto GameObject::GetShared() noexcept -> std::shared_ptr<GameObjectType<T>>
+	{
+		std::shared_ptr<GameObject> temp{ std::shared_ptr<GameObject>(this,[](GameObject*) {}) };
+		return std::static_pointer_cast<T>(temp);
+	}
+
+	template <typename T>
+	constexpr auto GameObject::GetShared() const noexcept -> std::shared_ptr<GameObjectType<const T>>
+	{
+		std::shared_ptr<const GameObject> temp{ std::shared_ptr<const GameObject>(this,[](const GameObject*) {}) };
+		return std::static_pointer_cast<const T>(temp);
 	}
 }
 

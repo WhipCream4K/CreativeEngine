@@ -1,7 +1,7 @@
 #pragma once
 #include "BaseComponent.h"
 
-#include <glm.hpp>
+//#include <glm.hpp>
 
 namespace dae
 {
@@ -9,12 +9,11 @@ namespace dae
 	{
 	public:
 
-
 		Transform();
 		const glm::fvec3& GetPosition() const { return m_Position; }
 		const glm::fvec3& GetRotation() const { return m_Rotation; }
 		const glm::fvec2& GetScale() const { return m_Scale; }
-		
+
 		void SetPosition(const glm::fvec3& position);
 		void SetPosition(float x, float y, float z);
 		void SetRotation(float x, float y, float z);
@@ -31,4 +30,6 @@ namespace dae
 		glm::fvec2 m_Scale;
 	};
 }
+
+
 

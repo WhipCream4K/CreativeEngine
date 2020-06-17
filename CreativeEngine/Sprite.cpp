@@ -1,179 +1,222 @@
 #include "pch.h"
 #include "Sprite.h"
-#include "Texture2D.h"
 #include "ResourceManager.h"
+#include "ITextureEntity.h"
 
-
-//dae::Sprite::Sprite(std::weak_ptr<Texture2D> pTexture, SpriteMode spriteMode, float width, float height)
-//	: m_Pivot{}
-//	, m_pTexture{ std::move(pTexture) }
-//{
-//}
-//
-//dae::Sprite::Sprite(const std::string& assetPath, const std::string& spriteName, SpriteMode spriteMode, float width,
-//	float height)
-//	: m_Pivot{}
-//	, m_Dimension{}
-//	, m_pTexture{}
-//{
-//	m_pTexture = ResourceManager::Load<Texture2D>(assetPath, spriteName);
-//
-//	//// Default Pivot point
-//	//m_Pivot.x = m_Width / 2.0f;
-//	//m_Pivot.y = m_Height / 2.0f;
-//}
-
-//dae::Sprite::Sprite(std::weak_ptr<Texture2D> pTexture)
-//	: m_BoundingBox{}
-//	, m_Pivot{}
-//	, m_Dimension{}
-//	, m_pTexture(std::move(pTexture))
-//{
-//	const auto textureDimension = pTexture.lock()->GetDimension();
-//	SetDefaultBoundingAndPivot(textureDimension);
-//}
-//
-//dae::Sprite::Sprite(const std::string& assetPath, const std::string& textureName)
-//	: m_BoundingBox{}
-//	, m_Pivot{}
-//	, m_Dimension{}
-//	, m_pTexture{}
-//{
-//	m_pTexture = ResourceManager::Load<Texture2D>(assetPath, textureName);
-//	const auto textureDimension = m_pTexture.lock()->GetDimension();
-//	SetDefaultBoundingAndPivot(textureDimension);
-//}
-
-
-dae::Sprite::Sprite(const std::string& spriteName, std::weak_ptr<Texture2D> pTexture)
-	: EngineAsset(spriteName)
-	, m_BoundingBox{}
+dae::Sprite::Sprite()
+	: m_TextureRect{}
 	, m_Pivot{}
 	, m_Dimension{}
-	, m_pTexture{ std::move(pTexture) }
+	, m_pTexture{}
+	, m_IsFlipX{}
+	, m_IsFlipY{}
 {
-	const auto textureDimension = m_pTexture.lock()->GetDimension();
-	SetDefaultBoundingAndPivot(textureDimension);
 }
 
-dae::Sprite::Sprite(std::weak_ptr<Texture2D> pTexture)
-	: EngineAsset(pTexture.lock()->GetName())
-	, m_BoundingBox{}
+dae::Sprite::Sprite(std::weak_ptr<ITextureEntity>&& textureEntity)
+	: m_TextureRect{}
 	, m_Pivot{}
 	, m_Dimension{}
-	, m_pTexture{ std::move(pTexture) }
+	, m_pTexture{ std::move(textureEntity) }
+	, m_IsFlipX{}
+	, m_IsFlipY{}
 {
-	const auto textureDimension = m_pTexture.lock()->GetDimension();
-	SetDefaultBoundingAndPivot(textureDimension);
+	SetDefaultBoundingAndPivot(m_pTexture.lock()->GetActualDimension());
 }
 
-//dae::Sprite::Sprite(const std::string& assetPath, const std::string& spriteName)
-//	: EngineAsset(spriteName)
-//	, m_BoundingBox{}
-//	, m_Pivot{}
-//	, m_Dimension{}
-//	, m_pTexture()
-//{
-//	m_pTexture = ResourceManager::Load<Texture2D>(assetPath, spriteName);
-//	const auto textureDimension{ m_pTexture.lock()->GetDimension() };
-//	SetDefaultBoundingAndPivot(textureDimension);
-//}
-
-std::shared_ptr<dae::Sprite> dae::Sprite::CreateSprite(const std::string& assetPath, const std::string& spriteName)
+auto dae::Sprite::Create(const std::string& texturePath, const std::string& textureName) -> std::shared_ptr<Sprite>
 {
-	const auto& texture{ ResourceManager::Load<Texture2D>(assetPath,spriteName) };
-	//TODO: This one should not be make again
+	const auto& texture{ ResourceManager::Load<DefaultTextureData>(texturePath,textureName) };
 	auto sprite{ std::make_shared<Sprite>(texture) };
-	ResourceManager::Store(sprite);
 	return sprite;
 }
 
-std::shared_ptr<dae::MultiSprites> dae::Sprite::CreateMultiSprite(const std::string& assetPath, const std::string& spriteName, const glm::fvec2& minBound,
-	const glm::fvec2& dimension, uint32_t amount, float pixelGap, SpriteFlow flow)
+auto dae::Sprite::Create(std::weak_ptr<ITextureEntity>&& textureEntity) -> std::shared_ptr<Sprite>
 {
-	const auto& texture{ ResourceManager::Load<Texture2D>(assetPath,spriteName) };
+	auto sprite{ std::make_shared<Sprite>(textureEntity.lock()) };
+	return sprite;
+}
 
-	std::shared_ptr<MultiSprites> multiSprite{ std::make_shared<MultiSprites>(texture->GetName() + "_SubSprites") };
-
-	//std::vector<std::shared_ptr<Sprite>> container{ amount };
+auto dae::Sprite::CreateSpriteSheet(std::weak_ptr<ITextureEntity> texture, const glm::fvec2& minBound,
+                                    const glm::fvec2& dimension, uint32_t amount, float pixelGap,
+                                    SpriteFlow flow) -> std::vector<std::shared_ptr<Sprite>>
+{
+	std::vector<std::shared_ptr<Sprite>> container{ amount };
 	glm::fvec2 subMinBound{ minBound.x,minBound.y };
-	glm::fvec2 subMaxBound{ minBound.x + dimension.y,minBound.y + dimension.y };
+	const bool leftToRight{ flow == SpriteFlow::LeftToRight };
 
 	for (uint32_t i = 1; i <= amount; ++i)
 	{
-		const std::string newSuffix{ texture->GetName() + "_" + std::to_string(i) };
-		const auto subSprite{ std::make_shared<Sprite>(newSuffix,texture) };
-		subSprite->SetDimension(dimension);
+		auto subSprite{ std::make_shared<Sprite>(texture.lock()) };
 
-		// Left to Right
+		subSprite->SetDimension(dimension,true);
+		subSprite->SetSubTextureMinBounding(subMinBound);
 
-		subSprite->SetMinBound(subMinBound);
-		subSprite->SetMaxBound(subMaxBound);
-		subSprite->SetPivotPoint({ dimension.x / 2.0f,dimension.y / 2.0f });
+		subMinBound.x += (dimension.x + pixelGap) * leftToRight;
+		subMinBound.y += (dimension.y + pixelGap) * !leftToRight;
 
-		subMinBound.x += (dimension.x + pixelGap) * int(flow);
-		subMaxBound.x += (dimension.x + pixelGap) * int(flow);
-
-		subMinBound.y += (dimension.y + pixelGap) * int(flow);
-		subMaxBound.y += (dimension.y + pixelGap) * int(flow);
-		
-		ResourceManager::Store(multiSprite);
-		multiSprite->sprites.push_back(subSprite);
+		container[i - 1] = std::move(subSprite);
 	}
 
-	return multiSprite;
+	return container;
 }
 
-std::shared_ptr<dae::MultiSprites> dae::Sprite::CreateMultiSprite(std::weak_ptr<Texture2D> pTexture,
-	const glm::fvec2& minBound, const glm::fvec2& dimension, uint32_t amount, float pixelGap, SpriteFlow flow)
+auto dae::Sprite::CreateSpriteSheet(const std::string& texturePath, const std::string& textureName,
+	const glm::fvec2& minBound, const glm::fvec2& dimension, uint32_t amount, float pixelGap,
+	SpriteFlow flow) -> std::vector<std::shared_ptr<Sprite>>
 {
-	flow;
-	//std::vector<std::shared_ptr<Sprite>> container{ amount };
-
-	std::shared_ptr<MultiSprites> multiSprite{std::make_shared<MultiSprites>(pTexture.lock()->GetName() + "_SubSprites")};
-
-	const auto texture = pTexture.lock();
+	const auto& texture{ ResourceManager::Load<DefaultTextureData>(texturePath,textureName) };
+	std::vector<std::shared_ptr<Sprite>> container{ amount };
 	glm::fvec2 subMinBound{ minBound.x,minBound.y };
-	glm::fvec2 subMaxBound{ minBound.x + dimension.y,minBound.y + dimension.y };
+	const bool leftToRight{ flow == SpriteFlow::LeftToRight };
 
 	for (uint32_t i = 1; i <= amount; ++i)
 	{
-		const std::string newSuffix{ texture->GetName() + "_" + std::to_string(i) };
-		const auto subSprite{ std::make_shared<Sprite>(newSuffix,texture) };
-		subSprite->SetDimension(dimension);
+		auto subSprite{ std::make_shared<Sprite>(texture) };
 
-		// Left to Right
+		subSprite->SetDimension(dimension,true);
+		subSprite->SetSubTextureMinBounding(subMinBound);
 
-		subSprite->SetMinBound(subMinBound);
-		subSprite->SetMaxBound(subMaxBound);
-		subSprite->SetPivotPoint({ dimension.x / 2.0f,dimension.y / 2.0f });
+		subMinBound.x += (dimension.x + pixelGap) * leftToRight;
+		subMinBound.y += (dimension.y + pixelGap) * !leftToRight;
 
-		subMinBound.x += (dimension.x + pixelGap) * int(flow);
-		subMaxBound.x += (dimension.x + pixelGap) * int(flow);
-
-		subMinBound.y += (dimension.y + pixelGap) * int(flow);
-		subMaxBound.y += (dimension.y + pixelGap) * int(flow);
-		
-		ResourceManager::Store(multiSprite);
-		//container[i - 1] = subSprite;
-		multiSprite->sprites.push_back(subSprite);
+		container[i - 1] = std::move(subSprite);
 	}
 
-	
-	return multiSprite;
+	return container;
 }
 
-void dae::Sprite::SetMinBound(const glm::fvec2& pos)
+//std::vector<dae::Sprite> dae::Sprite::CreateSpriteSheet(const std::string& texturePath, const std::string& textureName,
+//	const glm::fvec2& minBound, const glm::fvec2& dimension, uint32_t amount, float pixelGap, SpriteFlow flow)
+//{
+//	const auto& texture{ ResourceManager::Load<DefaultTextureData>(texturePath,textureName) };
+//
+//	std::vector<Sprite> container{ amount };
+//	glm::fvec2 subMinBound{ minBound.x,minBound.y };
+//	bool leftToRight{ flow == SpriteFlow::LeftToRight };
+//
+//	for (uint32_t i = 1; i <= amount; ++i)
+//	{
+//		auto subSprite{ Sprite(texture) };
+//
+//		subSprite.SetDimension(dimension);
+//		subSprite.SetSubTextureMinBounding(subMinBound);
+//		subSprite.SetPivotPoint({ dimension.x / 2.0f,dimension.y / 2.0f });
+//
+//		subMinBound.x += (dimension.x + pixelGap) * leftToRight;
+//		subMinBound.y += (dimension.y + pixelGap) * !leftToRight;
+//		container[i - 1] = subSprite;
+//	}
+//
+//	return container;
+//}
+
+glm::fvec2 dae::Sprite::GetDimension() const
 {
-	m_BoundingBox.x = pos.x;
-	m_BoundingBox.y = pos.y;
+	return glm::fvec2{ m_TextureRect.z,m_TextureRect.w };
 }
 
-void dae::Sprite::SetMaxBound(const glm::fvec2& pos)
+//std::shared_ptr<dae::Sprite> dae::Sprite::CreateSprite(const std::string& assetPath, const std::string& spriteName)
+//{
+//	const auto& texture{ ResourceManager::Load<Texture2D>(assetPath,spriteName) };
+//	//TODO: This one should not be make again
+//	//auto sprite{ std::make_shared<Sprite>(texture) };
+//	//ResourceManager::Store(sprite);
+//	return ResourceManager::Store<Sprite>(spriteName);
+//}
+
+//std::vector<std::shared_ptr<dae::Sprite>> dae::Sprite::CreateSpriteSheet(const std::string& textureName, const glm::fvec2& minBound,
+//	const glm::fvec2& dimension, uint32_t amount, float pixelGap, SpriteFlow flow)
+//{
+//	const auto& texture{ ResourceManager::GetAsset<Texture2D>(textureName) };
+//
+//	//std::shared_ptr<MultiSprites> multiSprite{ std::make_shared<MultiSprites>(texture->GetName() + "_SubSprites") };
+//
+//	std::vector<std::shared_ptr<Sprite>> container{ amount };
+//	glm::fvec2 subMinBound{ minBound.x,minBound.y };
+//	glm::fvec2 subMaxBound{ minBound.x + dimension.y,minBound.y + dimension.y };
+//
+//	for (uint32_t i = 1; i <= amount; ++i)
+//	{
+//		const std::string newSuffix{ texture->GetName() + "_" + std::to_string(i) };
+//		const auto subSprite{ std::make_shared<Sprite>(newSuffix,texture) };
+//		subSprite->SetDimension(dimension);
+//
+//		// Left to Right
+//
+//		subSprite->SetSubTextureMinBounding(subMinBound);
+//		subSprite->SetSubTextureMaxBound(subMaxBound);
+//		subSprite->SetPivotPoint({ dimension.x / 2.0f,dimension.y / 2.0f });
+//
+//		subMinBound.x += (dimension.x + pixelGap) * int(flow);
+//		subMaxBound.x += (dimension.x + pixelGap) * int(flow);
+//
+//		subMinBound.y += (dimension.y + pixelGap) * int(flow);
+//		subMaxBound.y += (dimension.y + pixelGap) * int(flow);
+//
+//		container[i - 1] = subSprite;
+//		//ResourceManager::Store(multiSprite->GetName());
+//		//multiSprite->sprites.push_back(subSprite);
+//	}
+//
+//	return container;
+//}
+//
+//std::shared_ptr<dae::MultiSprites> dae::Sprite::CreateSpriteSheet(std::weak_ptr<Texture2D> pTexture,
+//	const glm::fvec2& minBound, const glm::fvec2& dimension, uint32_t amount, float pixelGap, SpriteFlow flow)
+//{
+//	//std::vector<std::shared_ptr<Sprite>> container{ amount };
+//
+//	std::shared_ptr<MultiSprites> multiSprite{ std::make_shared<MultiSprites>(pTexture.lock()->GetName() + "_SubSprites") };
+//
+//	const auto texture = pTexture.lock();
+//	glm::fvec2 subMinBound{ minBound.x,minBound.y };
+//	glm::fvec2 subMaxBound{ minBound.x + dimension.y,minBound.y + dimension.y };
+//
+//	for (uint32_t i = 1; i <= amount; ++i)
+//	{
+//		const std::string newSuffix{ texture->GetName() + "_" + std::to_string(i) };
+//		const auto subSprite{ std::make_shared<Sprite>(newSuffix,texture) };
+//		subSprite->SetDimension(dimension);
+//
+//		// Left to Right
+//
+//		subSprite->SetSubTextureMinBounding(subMinBound);
+//		subSprite->SetSubTextureMaxBound(subMaxBound);
+//		subSprite->SetPivotPoint({ dimension.x / 2.0f,dimension.y / 2.0f });
+//
+//		subMinBound.x += (dimension.x + pixelGap) * int(flow);
+//		subMaxBound.x += (dimension.x + pixelGap) * int(flow);
+//
+//		subMinBound.y += (dimension.y + pixelGap) * int(flow);
+//		subMaxBound.y += (dimension.y + pixelGap) * int(flow);
+//
+//		ResourceManager::Store(multiSprite->GetName());
+//		multiSprite->sprites.push_back(subSprite);
+//	}
+//
+//
+//	return multiSprite;
+//}
+//
+void dae::Sprite::SetSubTextureMinBounding(const glm::fvec2& pos)
 {
-	m_BoundingBox.z = pos.x;
-	m_BoundingBox.w = pos.y;
+	m_TextureRect.x = pos.x;
+	m_TextureRect.y = pos.y;
 }
+
+void dae::Sprite::SetDimension(const glm::fvec2& dimension, bool resetPivot)
+{
+	m_TextureRect.z = dimension.x;
+	m_TextureRect.w = dimension.y;
+
+	if(resetPivot)
+	{
+		m_Pivot.x = dimension.x / 2.0f;
+		m_Pivot.y = dimension.y / 2.0f;
+	}
+}
+
 
 void dae::Sprite::SetDefaultBoundingAndPivot(const glm::fvec2& textureDimension)
 {
@@ -182,5 +225,16 @@ void dae::Sprite::SetDefaultBoundingAndPivot(const glm::fvec2& textureDimension)
 	m_Pivot.y = textureDimension.y / 2.0f;
 
 	// Default Bounding Box (entire texture)
-	m_BoundingBox = { 0.0f,0.0f,textureDimension.x,textureDimension.y };
+	m_TextureRect = { 0.0f,0.0f,textureDimension.x,textureDimension.y };
+}
+
+void dae::Sprite::Render(const RenderTransform& transform) const
+{
+	TextureInfo info{};
+	info.textureRect = m_TextureRect;
+	info.isFlipX = m_IsFlipX;
+	info.isFlipY = m_IsFlipY;
+	info.pivot = m_Pivot;
+
+	m_pTexture.lock()->Render(info, transform);
 }

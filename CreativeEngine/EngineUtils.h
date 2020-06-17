@@ -112,5 +112,15 @@ namespace dae
 		};
 	}
 
+	inline SDL_Point Float2ToSDLPoint(const glm::fvec2& point)
+	{
+		return SDL_Point{ int(point.x),int(point.y) };
+	}
+
+	inline SDL_Rect Float4ToSDLRect(const glm::fvec4& rect)
+	{
+		return SDL_Rect{ int(rect.x),int(rect.y),int(rect.z),int(rect.w) };
+	}
+
 }
 

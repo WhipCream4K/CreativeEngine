@@ -6,6 +6,10 @@ namespace dae
 	class BaseComponent;
 	class Scene;
 	class GameObject;
+	class SDLTextureData;
+	struct IMulticastCondition;
+	struct IMuticastAction;
+	class SDLFontData;
 	
 	template<typename T>
 	using GameComponent = typename std::enable_if<std::is_base_of_v<BaseComponent, T>, T>::type;
@@ -25,4 +29,6 @@ namespace dae
 	};
 	
 	using AudioRawData = std::variant<std::shared_ptr<FMOD::Channel>>;
+	using DefaultTextureData = SDLTextureData;
+	using DefaultFontData = SDLFontData;
 }

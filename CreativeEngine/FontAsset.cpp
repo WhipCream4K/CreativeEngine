@@ -17,6 +17,10 @@ dae::FontAsset::FontAsset(const std::string& assetPath, const std::string& asset
 	}
 }
 
+std::shared_ptr<dae::FontAsset> dae::FontAsset::Create(const std::string& assetPath, const std::string& assetName)
+{
+}
+
 std::shared_ptr<TTF_Font> dae::FontAsset::GetSDLFont(uint32_t size)
 {
 	const auto it = m_pFonts.find(size);

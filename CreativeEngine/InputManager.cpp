@@ -60,20 +60,20 @@ void dae::InputManager::ReadInputs()
 	}
 }
 
+auto dae::InputManager::RegisterObserver(std::weak_ptr<InputComponent>&& inputComponent) -> void
+{
+	m_Observers.emplace_back(std::move(inputComponent));
+}
+
 void dae::InputManager::InputActionExecuteCondition(InputAction& input) const
 {	
 	bool isKeyPressed{};
 
 	switch (input.key.device)
 	{
-	case Device::D_Keyboard:
-		isKeyPressed = IsKeyboardKeyPressed(input.key.keyCode);
-		break;
-	case Device::D_Mouse:
-		isKeyPressed = IsMouseKeyPressed(input.key.mouseKey);
-		break;
-	case Device::D_Gamepad:
-		break;
+	case Device::D_Keyboard: isKeyPressed = IsKeyboardKeyPressed(input.key.keyCode); break;
+	case Device::D_Mouse: isKeyPressed = IsMouseKeyPressed(input.key.mouseKey); break;
+	case Device::D_Gamepad: break;
 	default: ;
 	}
 

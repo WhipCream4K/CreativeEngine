@@ -9,9 +9,3 @@ dae::AudioClip::AudioClip(const std::string& assetPath, const std::string& asset
 {
 	
 }
-
-std::shared_ptr<dae::AudioClip> dae::AudioClip::Create(const std::string& assetPath, const std::string& assetName)
-{
-	// TODO: For now there's nothing to do
-	return ResourceManager::Load<AudioClip>(assetPath, assetName);
-}

@@ -14,7 +14,7 @@ namespace dae
 		virtual void Update() = 0;
 		virtual void LateUpdate() = 0;
 
-		virtual void SetOwner(std::weak_ptr<GameObject>) = 0;
+		virtual void RegisterOwner(std::weak_ptr<GameObject>&&) = 0;
 	};
 }
 

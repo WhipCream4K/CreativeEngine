@@ -4,37 +4,28 @@
 struct SDL_Texture;
 namespace dae
 {
-	enum class SamplerState
-	{
-		SS_PixelSam,
-		SS_LinearSam,
-		SS_AnisoSam
-	};
-	
-	class Texture2D final : public BaseAsset
+	class ITextureEntity;
+	class Texture2D final
 	{
 	public:
 
 		Texture2D(const std::string& assetPath, const std::string& assetName);
-		Texture2D(const std::string& assetPath, const std::string& assetName,SamplerState sampler);
 
 		Texture2D(const Texture2D&) = delete;
 		Texture2D& operator=(const Texture2D&) = delete;
 		Texture2D(Texture2D&&) = delete;
 		Texture2D& operator=(Texture2D&&) = delete;
-		
-		static std::shared_ptr<Texture2D> Create(const std::string& assetPath, const std::string& assetName, SamplerState sampler);
 
-		std::shared_ptr<SDL_Texture> GetSDLTexture() const { return m_RenderTexture.GetTexture(); }
-		const RenderTexture& GetRenderTexture() const { return m_RenderTexture; }
-		const glm::fvec2& GetDimension() const { return m_RenderTexture.GetDimension(); }
-		void SetSamplerState(SamplerState sampler);
-		
+		// return type of the default render format
+		static std::shared_ptr<ITextureEntity> Create(const std::string&, const std::string&);
 
+		std::shared_ptr<DefaultTextureData> GetTextureData();
+		//const RenderInfo& GetRenderTexture() const { return m_RenderTexture; }
+		//const glm::fvec2& GetDimension() const { return m_RenderTexture.GetDimension(); }
+		
 	private:
 
-		RenderTexture m_RenderTexture;
-		//SamplerState m_SamplerState;
+		std::weak_ptr<ITextureEntity> m_DefaultTextureData;
 	};
 }
 

@@ -2,13 +2,10 @@
 #include "SpriteTestScene.h"
 #include "SpriteRenderer.h"
 #include "TextRenderer.h"
-#include "ResourceManager.h"
-#include "FontAsset.h"
 #include "DAELogo.h"
 #include "PlayerCharacter.h"
 #include "Sprite.h"
-#include "Texture2D.h"
-#include "PlayerCharacter.h"
+#include "Text.h"
 
 SpriteTestScene::SpriteTestScene()
 	: Scene("SpriteTestScene")
@@ -22,19 +19,22 @@ void SpriteTestScene::SceneInitialize()
 {
 	using namespace dae;
 
-	//const Sprite logoSprite{ "./Resources/logo.png","DAELogo",SpriteMode::SM_Single };
-	//const Sprite backGround{ "./Resources/background.jpg","BlackBG",SpriteMode::SM_Single };
-	//const Sprite debugRotation{ "./Resources/Debug.png","Debug",SpriteMode::SM_Single };
+	const auto daeLogoSprite{ Sprite::Create("./Resources/logo.png","DAELogo") };
+	const auto background{ Sprite::Create("./Resources/background.jpg","BlackBG") };
+	const auto debugRotation{ Sprite::Create("./Resources/Debug.png","Debug") };
 
-	//const auto playerSpriteSheet{ Texture2D::Create("./Resources/PlayerCharacterSheet.tga","Player",SamplerState::SS_PixelSam) };
-	
-	const auto daeLogoSprite{ Sprite::CreateSprite("./Resources/logo.png","DAELogo") };
-	const auto background{ Sprite::CreateSprite("./Resources/background.jpg","BlackBG") };
-	const auto debugRotation{ Sprite::CreateSprite("./Resources/Debug.png","Debug") };
-	//const auto playerSprite{ Sprite::CreateMultiSprite(playerSpriteSheet,
-	//	{2.0f,35.0f},{16.0f,16.0f},4,2.0f) };
+	// TODO: Probably doing something like scene binding so the asset doesn't go out of scope
+	m_pSprites.emplace_back(daeLogoSprite);
+	m_pSprites.emplace_back(background);
+	m_pSprites.emplace_back(debugRotation);
 
-	const auto& font{ ResourceManager::Load<FontAsset>("./Resources/Lingua.otf","Lingua") };
+	const auto& defaultFont{ ResourceManager::Load<DefaultFontData>("./Resources/Font/Lingua.otf","Lingua") };
+
+	const auto creativeText{ Text::Create(defaultFont,"CreativeEngine",50) };
+	const auto transparentText{ Text::Create(defaultFont,"Transparent!",100) };
+
+	m_pTextObjs.emplace_back(creativeText);
+	m_pTextObjs.emplace_back(transparentText);
 
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
 	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
@@ -49,30 +49,20 @@ void SpriteTestScene::SceneInitialize()
 	backGroundObject->GetTransform().SetScale(2.5f, 2.5f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(background);
-
-	const auto& player = CreateGameObject<PlayerCharacter>({0.0f,-130.0f,2.0f});
+	
+	const auto& player = CreateGameObject<PlayerCharacter>({ 0.0f,-130.0f,2.0f });
 	player->GetTransform().SetScale(15.0f, 15.0f);
-	//
-	//const auto& player = CreateGameObject({});
-	//spriteRenderer = player->CreateComponent<SpriteRenderer>();
-	//player->GetTransform().SetScale(15.0f, 15.0f);
-	//spriteRenderer->SetSprite(playerSprite->sprites[3]);
 
 	m_pDAELogo = debugRuler;
 
 	const auto& text = CreateGameObject<GameObject>(glm::fvec3{ 0.0f,0.0f,2.0f });
 	m_pTextRenderer = text->CreateComponent<TextRenderer>();
-	m_pTextRenderer->SetFontAsset(font);
-	m_pTextRenderer->SetSize(50);
-	m_pTextRenderer->SetText("Creative Engine");
-	m_pTextRenderer->SetForegroundColor({ 1.0f,1.0f,1.0f,1.0f });
+	m_pTextRenderer->SetText(creativeText);
 
-	const auto& transparentText = CreateGameObject<GameObject>({ 300.0f,-300.0f,1.0f });
-	const auto& textRenderer = transparentText->CreateComponent<TextRenderer>();
-	textRenderer->SetFontAsset(font);
+	const auto& text2 = CreateGameObject<GameObject>({ 300.0f,-300.0f,1.0f });
+	const auto& textRenderer = text2->CreateComponent<TextRenderer>();
+	textRenderer->SetText(transparentText);
 	textRenderer->SetForegroundColor({ 1.0f,1.0f,1.0f,0.5f });
-	textRenderer->SetSize(100);
-	textRenderer->SetText("Transparent!");
 }
 
 void SpriteTestScene::Update()
@@ -84,7 +74,7 @@ void SpriteTestScene::Update()
 
 	m_TextSize = abs(sinf(m_AnimTimer)) * 125.0f;
 	m_TextSize = dae::Clamp(m_TextSize, 1.0f, 125.0f);
-	m_pTextRenderer->SetSize(uint32_t(m_TextSize));
+	m_pTextRenderer->SetTextSize(uint32_t(m_TextSize));
 
 	if (m_AnimTimer >= dae::XM_2PI)
 		m_AnimTimer -= dae::XM_2PI;
