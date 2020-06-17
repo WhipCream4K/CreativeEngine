@@ -9,6 +9,7 @@ public:
 
 protected:
 	void SceneInitialize() override;
+	void SetUpInputMappingGroup() override;
 	void Update() override;
 	void Render() const override;
 };

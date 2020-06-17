@@ -55,6 +55,7 @@ namespace dae
 		virtual void LateUpdate() {}
 
 		void RegisterOwner(std::weak_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
+		//void RegisterOwner(std::shared_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
 		
 	private:
 
@@ -104,23 +105,22 @@ namespace dae
 	{
 		const auto component{ std::make_shared<T>() };
 		m_pComponents.emplace_back(component);
-		const auto owner{ GetShared<GameObject>() };
-		std::static_pointer_cast<IInternalComponent>(component)->RegisterOwner(std::shared_ptr<GameObject>(this,[](GameObject*){}));
+		std::static_pointer_cast<IInternalComponent>(component)->RegisterOwner(shared_from_this());
 		return component; // return strong ref to this component
 	}
 
 	template <typename T>
 	constexpr auto GameObject::GetShared() noexcept -> std::shared_ptr<GameObjectType<T>>
 	{
-		std::shared_ptr<GameObject> temp{ std::shared_ptr<GameObject>(this,[](GameObject*) {}) };
-		return std::static_pointer_cast<T>(temp);
+		//std::shared_ptr<GameObject> temp{ std::shared_ptr<GameObject>(shared_from_this()) };
+		return std::static_pointer_cast<T>(shared_from_this());
 	}
 
 	template <typename T>
 	constexpr auto GameObject::GetShared() const noexcept -> std::shared_ptr<GameObjectType<const T>>
 	{
-		std::shared_ptr<const GameObject> temp{ std::shared_ptr<const GameObject>(this,[](const GameObject*) {}) };
-		return std::static_pointer_cast<const T>(temp);
+		//std::shared_ptr<const GameObject> temp{ std::shared_ptr<const GameObject>(shared_from_this()) };
+		return std::static_pointer_cast<const T>(shared_from_this());
 	}
 }
 

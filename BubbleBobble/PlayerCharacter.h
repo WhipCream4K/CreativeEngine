@@ -14,5 +14,6 @@ public:
 private:
 	// Container
 	std::vector<std::shared_ptr<dae::Sprite>> m_pPlayerSpriteSheet;
+	bool m_Ismoving;
 };
 

@@ -8,7 +8,6 @@ dae::GameObject::GameObject()
 	, m_IsActive{ true }
 	, m_IsInit{}
 {
-	static_cast<IInternalComponent*>(&m_Transform)->RegisterOwner(GetShared<GameObject>());
 }
 
 void dae::GameObject::RootRender() const
@@ -23,6 +22,8 @@ void dae::GameObject::RootRender() const
 
 void dae::GameObject::RootAwake()
 {
+
+	static_cast<IInternalComponent*>(&m_Transform)->RegisterOwner(weak_from_this());
 	Awake();
 
 	for (const auto& component : m_pComponents)

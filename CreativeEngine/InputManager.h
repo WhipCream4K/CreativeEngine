@@ -13,6 +13,14 @@ namespace dae
 		IE_Down
 	};
 
+	enum class KeyState
+	{
+		K_None,
+		K_NotChange,
+		K_Pressed,
+		K_Release,
+	};
+
 	// my enum for mouse key since 
 	enum class MouseKey
 	{
@@ -49,7 +57,7 @@ namespace dae
 		 * \param SDL_KeyboardCode keyboard code value type of uint8
 		 * \param SDL_Mouse a SDL mouse macro e.g SDL_BUTTON_LEFT, SDL_MOUSE_MOTION_X
 		 */
-		Key(Device device, SDL_Keycode SDL_KeyboardCode, MouseKey SDL_Mouse)
+		Key(Device device, SDL_Keycode SDL_KeyboardCode, MouseKey SDL_Mouse = MouseKey::MK_None)
 			: device{ device }
 			, keyCode{ SDL_KeyboardCode }
 			, mouseKey{ SDL_Mouse }
@@ -70,20 +78,22 @@ namespace dae
 	struct InputAction
 	{
 
-		InputAction(const Key& _key, const std::string& _groupName, InputEvent _inputEvent)
-			: key{ _key }
-			, groupName{ _groupName }
-			, inputEvent{ _inputEvent }
-			, isTriggered{}
-			, isPressedFlag{}
+		InputAction(const Key& defKey, const std::string& groupName/*, InputEvent event*/)
+			: key{ defKey }
+			, groupName{ groupName }
+			, keyState{ KeyState::K_None }
+			//, inputEvent{ event }
+			//, isTriggered{}
+			//, isPressedFlag{}
 		{
 		}
 
 		Key key;
 		std::string groupName;
-		InputEvent inputEvent;
-		bool isTriggered;
-		bool isPressedFlag; // use for press event to detect if the button still pressed in previous frame
+		KeyState keyState;
+		//InputEvent inputEvent;
+		//bool isTriggered;
+		//bool isPressedFlag; // use for press event to detect if the button still pressed in previous frame
 	};
 
 	struct InputAxis
@@ -106,8 +116,9 @@ namespace dae
 	class InputActionMappingGroup final
 	{
 	public:
+		InputActionMappingGroup(const std::string& groupName);
 		const std::string& GetGroupName() const { return m_GroupName; }
-		void AddKey(const Key& key, InputEvent inputEvent = InputEvent::IE_Pressed);
+		void AddKey(const Key& key);
 		std::vector<InputAction>& GetInputActions() { return m_InputActionLists; }
 	private:
 		std::string m_GroupName;
@@ -117,6 +128,7 @@ namespace dae
 	class InputAxisMappingGroup final
 	{
 	public:
+		InputAxisMappingGroup(const std::string& groupName);
 		const std::string& GetGroupName() const { return m_GroupName; }
 		void AddKey(const Key& key, float axisValue);
 		std::vector<InputAxis>& GetInputAxises() { return m_InputAxisLists; }
@@ -130,7 +142,7 @@ namespace dae
 	{
 	public:
 
-		InputManager() = default;
+		InputManager();
 
 		InputActionMappingGroup& AddInputActionGroup(const std::string& groupName);
 		InputAxisMappingGroup& AddInputAxisGroup(const std::string& groupName);
@@ -149,9 +161,9 @@ namespace dae
 
 		std::vector<std::weak_ptr<InputComponent>> m_Observers;
 
-		void InputActionExecuteCondition(InputAction& input) const;
-		void InputAxisExecuteCondition(InputAxis& input) const;
-		bool IsMouseKeyPressed(MouseKey mouseKey,float* axisValue = nullptr) const;
+		bool InputActionExecuteCondition(InputAction& input) const;
+		bool InputAxisExecuteCondition(InputAxis& input) const;
+		bool IsMouseKeyPressed(MouseKey mouseKey, float* axisValue = nullptr) const;
 		bool IsKeyboardKeyPressed(SDL_Keycode keycode) const;
 	};
 }

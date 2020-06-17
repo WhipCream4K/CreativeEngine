@@ -34,7 +34,7 @@ namespace dae
 	protected:
 
 		virtual void SceneInitialize() = 0;
-		virtual void SetupInputAction() {}
+		virtual void SetUpInputMappingGroup() {}
 		virtual void Update() = 0;
 		virtual void Render() const {}
 
@@ -57,7 +57,7 @@ namespace dae
 	{
 		const auto gameObject{ std::make_shared<T>() };
 		m_pGameObjects.emplace_back(gameObject);
-		std::static_pointer_cast<IInternalGameObject>(gameObject)->RegisterOwner(weak_from_this());
+		std::static_pointer_cast<IInternalGameObject>(gameObject)->RegisterOwner(GetShared<Scene>());
 		Transform& transform{ gameObject->GetTransform() };
 		transform.SetPosition(position);
 		transform.SetRotation(rotation);
@@ -68,8 +68,7 @@ namespace dae
 	template <typename UserScene>
 	constexpr auto Scene::GetShared() noexcept -> std::shared_ptr<SceneType<UserScene>>
 	{
-		auto temp{ std::shared_ptr<Scene>(this,[](Scene*) {}) };
-		return std::static_pointer_cast<UserScene>(temp);
+		return std::static_pointer_cast<UserScene>(shared_from_this());
 	}
 }
 

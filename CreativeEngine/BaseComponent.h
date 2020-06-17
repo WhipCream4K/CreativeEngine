@@ -26,10 +26,10 @@ namespace dae
 		std::shared_ptr<GameObject> GetGameObject() const;
 
 		template<typename T>
-		constexpr auto GetShared() const noexcept -> std::shared_ptr<GameComponent<const T>>;
+		constexpr auto GetShared() const noexcept->std::shared_ptr<GameComponent<const T>>;
 
 		template<typename T>
-		constexpr auto GetShared() noexcept -> std::shared_ptr<GameComponent<T>>;
+		constexpr auto GetShared() noexcept->std::shared_ptr<GameComponent<T>>;
 
 		auto GetScene() const noexcept->std::shared_ptr<Scene>;
 
@@ -55,14 +55,14 @@ namespace dae
 	template <typename T>
 	constexpr auto BaseComponent::GetShared() const noexcept -> std::shared_ptr<GameComponent<const T>>
 	{
-		std::shared_ptr<const BaseComponent> temp{ this,[](const BaseComponent*) {} };
+		std::shared_ptr<const BaseComponent> temp{ shared_from_this() };
 		return std::static_pointer_cast<const T>(temp);
 	}
 
 	template <typename T>
 	constexpr auto BaseComponent::GetShared() noexcept -> std::shared_ptr<GameComponent<T>>
 	{
-		std::shared_ptr<BaseComponent> temp{ this,[](BaseComponent*){} };
+		std::shared_ptr<BaseComponent> temp{ shared_from_this() };
 		return std::static_pointer_cast<T>(temp);
 	}
 

@@ -42,7 +42,7 @@ void dae::Scene::RootInitialize()
 	m_Context.pGameTime->Stop();
 
 	SceneInitialize();
-	SetupInputAction();
+	SetUpInputMappingGroup();
 	
 	m_Context.pGameTime->Start();
 

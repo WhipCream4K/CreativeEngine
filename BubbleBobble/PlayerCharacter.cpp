@@ -7,7 +7,14 @@
 #include <iostream>
 
 PlayerCharacter::PlayerCharacter()
+	: m_pPlayerSpriteSheet{}
 {
+}
+
+void PlayerCharacter::Awake()
+{
+	SetUpInputComponent();
+
 	// set default param
 	using namespace dae;
 
@@ -44,13 +51,11 @@ PlayerCharacter::PlayerCharacter()
 	animator->AddAnimationClip(animationClip);
 }
 
-void PlayerCharacter::Awake()
-{
-	SetUpInputComponent();
-}
-
 void PlayerCharacter::SetUpInputComponent()
 {
+	if (!m_pInputComponent)
+		m_pInputComponent = CreateComponent<dae::InputComponent>();
+	
 	// Setup input binding here
 	m_pInputComponent->BindAction("Jump", dae::InputEvent::IE_Released, GetShared<PlayerCharacter>(), &PlayerCharacter::JumpTest);
 }

@@ -9,13 +9,15 @@ namespace dae
 
 	template<typename ...Args>
 	using all_none_void = std::enable_if_t<(none_void_check<Args...>)>;
-	
+
+	struct IAxisMulticast;
 	struct ActionHandlerSignature
 	{
 		template<typename T>
 		using ObjectFunctionDelegate = void(T::*)();
 		template<typename T, typename ...Args>
 		using ObjectVariadicDelegate = void(T::*)(all_none_void<Args...>);
+		using AxisMulticastDelegate = std::shared_ptr<IAxisMulticast>;
 	};
 
 	struct AxisHandlerSignature
@@ -33,40 +35,49 @@ namespace dae
 
 	struct ActionHandle
 	{
-		ActionHandle(const std::string& _actionName, InputEvent _inputEvent, ActionFunc&& func)
+		ActionHandle(const std::string& aActionName, InputEvent event, ActionFunc&& func)
 			: action(std::move(func))
-			, actionName{ _actionName }
-			, inputEvent{ _inputEvent }
-			, isActive{}
+			, actionName{ aActionName }
+			, inputEvent{ event }
+			, isTriggered{}
+			, isPressedFlag{}
 		{
 		}
+
+		void ShouldExecute();
 
 		ActionFunc action;
 		std::string actionName;
 		InputEvent inputEvent;
-		bool isActive;
+		bool isTriggered;
+		// use to check whether last frame, this button was pressed
+		bool isPressedFlag;
 	};
 
 	struct AxisHandle
 	{
-		AxisHandle(const std::string& _axisName, ActionFunc&& func)
+		AxisHandle(const std::string& aAxisName, ActionHandlerSignature::AxisMulticastDelegate&& func)
 			: action(std::move(func))
-			, axisName{ _axisName }
-			, isActive{}
+			, axisName{ aAxisName }
+			, totalAxisValue{}
+			, isTriggered{}
 		{
 		}
 
-		ActionFunc action;
-		std::string_view axisName;
-		bool isActive;
+		void ShouldExecute(float axisValue);
+
+		ActionHandlerSignature::AxisMulticastDelegate action;
+		std::string axisName;
+		float totalAxisValue;
+		bool isTriggered;
 	};
 
 	template<typename UserClass, typename ...Args>
 	struct DelegateCallbackWithParams : IMuticastAction
 	{
-		DelegateCallbackWithParams(void(UserClass::* funcName)(Args...), std::weak_ptr<UserClass>&& _caller, Args&&... args)
+		DelegateCallbackWithParams(void(UserClass::* funcName)(Args...), std::weak_ptr<UserClass>&& callObject, Args&&... args)
 			: funcPtr(funcName)
-			, caller(std::move(caller))
+			, caller(std::move(callObject))
 			, arguments{ std::move(args) }
 		{
 		}
@@ -81,9 +92,9 @@ namespace dae
 	template<typename UserClass>
 	struct DelegateCallbackNoParams : IMuticastAction
 	{
-		DelegateCallbackNoParams(void(UserClass::* funcName)(), std::weak_ptr<UserClass>&& _caller)
+		DelegateCallbackNoParams(void(UserClass::* funcName)(), std::weak_ptr<UserClass>&& callObject)
 			: funcPtr(funcName)
-			, caller{ std::move(_caller) }
+			, caller{ std::move(callObject) }
 		{
 		}
 
@@ -109,59 +120,61 @@ namespace dae
 			((*temp).*funcPtr)();
 	}
 
+	struct IAxisMulticast
+	{
+		virtual ~IAxisMulticast() = default;
+		virtual void Invoke(float axisValue) = 0;
+	};
 
 	template<typename UserClass, typename ...Args>
-	struct InputAxisWithParamsCallback : IMuticastAction
+	struct InputAxisWithParamsCallback : IAxisMulticast
 	{
-		InputAxisWithParamsCallback(void(UserClass::* funcName)(float, Args...), std::weak_ptr<UserClass>&& _caller, Args&&... args)
+		InputAxisWithParamsCallback(void(UserClass::* funcName)(float, Args...), std::weak_ptr<UserClass>&& callObject, Args&&... args)
 			: funcPtr{ funcName }
-			, caller{ std::move(_caller) }
+			, caller{ std::move(callObject) }
 			, arguments{ std::move(args...) }
-			, axisValue{}
 		{
 		}
 
-		void Invoke() override;
+		void Invoke(float axisValue) override;
 
 		VariadicFuncPtr<UserClass, float, Args...> funcPtr;
 		std::weak_ptr<UserClass> caller;
 		std::tuple<Args...> arguments;
-		float axisValue;
 	};
 
-	template <typename UserClass, typename ... Args>
-	void InputAxisWithParamsCallback<UserClass, Args...>::Invoke()
-	{
-		auto temp{ caller.lock() };
-		if (temp)
-			(temp->*funcPtr)(axisValue, arguments...);
-	}
-
 	template<typename UserClass>
-	struct InputAxisNoParamsCallback : IMuticastAction
+	struct InputAxisNoParamsCallback : IAxisMulticast
 	{
-		InputAxisNoParamsCallback(void(UserClass::* funcName)(float), std::weak_ptr<UserClass>&& _caller)
+		InputAxisNoParamsCallback(void(UserClass::* funcName)(float), std::weak_ptr<UserClass>&& callObject)
 			: funcPtr{ funcName }
-			, caller{ std::move(_caller) }
+			, caller{ std::move(callObject) }
 			, axisValue{}
 		{
 		}
 
-		void Invoke() override;
-		
+		void Invoke(float axisValue) override;
+
 		FuncPtr<UserClass> funcPtr;
 		std::weak_ptr<UserClass> caller;
 		float axisValue;
 	};
 
+	template <typename UserClass, typename ... Args>
+	void InputAxisWithParamsCallback<UserClass, Args...>::Invoke(float axisValue)
+	{
+		auto temp{ caller.lock() };
+		if (temp)
+			((*temp).*funcPtr)(axisValue, arguments...);
+	}
+
 	template <typename UserClass>
-	void InputAxisNoParamsCallback<UserClass>::Invoke()
+	void InputAxisNoParamsCallback<UserClass>::Invoke(float axisValue)
 	{
 		auto temp{ caller.lock() };
 		if (temp)
 			((*temp).*funcPtr)(axisValue);
 	}
-
 
 	class InputComponent final : public BaseComponent
 	{
@@ -193,8 +206,9 @@ namespace dae
 			AxisHandlerSignature::ObjectVariadicDelegate<UserClass, Args...> funcPtr,
 			Args&&... args) -> void;
 
-		constexpr auto GetActionHandles() const noexcept -> const std::unordered_map<std::string, ActionHandle>& { return m_ActionHandle; }
-		constexpr auto GetAxisHandles() const noexcept -> const std::unordered_map<std::string, AxisHandle>& { return m_AxisHandle; }
+		constexpr auto GetActionHandles()  noexcept ->  std::unordered_map<std::string, ActionHandle>& { return m_ActionHandle; }
+		constexpr auto GetAxisHandles()  noexcept ->  std::unordered_map<std::string, AxisHandle>& { return m_AxisHandle; }
+
 
 	protected:
 
@@ -204,6 +218,8 @@ namespace dae
 
 		std::unordered_map<std::string, ActionHandle> m_ActionHandle;
 		std::unordered_map<std::string, AxisHandle> m_AxisHandle;
+
+		void InputActionConditionalExecute();
 	};
 
 	template <typename UserClass>
