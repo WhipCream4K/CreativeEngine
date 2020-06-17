@@ -18,5 +18,8 @@ protected:
 private:
 
 	std::shared_ptr<dae::AudioSource> m_AudioPlayer;
+
+	// container
+	std::vector<std::shared_ptr<dae::Sprite>> m_Sprites;
 };
 

@@ -21,6 +21,8 @@ namespace dae
 		void SetScale(const glm::fvec2& scale) { m_Scale = scale; }
 		void SetScale(float x, float y);
 
+		constexpr auto SetRelativePosition(const glm::fvec3& deltaPos) noexcept -> void;
+
 	private:
 
 		glm::fvec3 m_Position;
@@ -29,6 +31,12 @@ namespace dae
 		// for now there's only scaling on x and y because scaling on z axis doesn't make sense at the moment
 		glm::fvec2 m_Scale;
 	};
+
+	constexpr auto Transform::SetRelativePosition(const glm::fvec3& deltaPos) noexcept -> void
+	{
+		m_Position.x += deltaPos.x;
+		m_Position.y += deltaPos.y;
+	}
 }
 
 

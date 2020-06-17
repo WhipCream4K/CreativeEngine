@@ -22,7 +22,6 @@ void dae::GameObject::RootRender() const
 
 void dae::GameObject::RootAwake()
 {
-
 	static_cast<IInternalComponent*>(&m_Transform)->RegisterOwner(weak_from_this());
 	Awake();
 

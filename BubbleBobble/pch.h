@@ -9,6 +9,7 @@
 #include "SDLTextureData.h"
 #include "SDLFontData.h"
 #include "ResourceManager.h"
+#include "Scene.h"
 
 #include <string>
 #include <memory>

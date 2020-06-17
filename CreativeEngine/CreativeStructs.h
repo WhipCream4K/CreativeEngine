@@ -124,18 +124,26 @@ namespace dae
 		float rotation{};
 	};
 
+	struct TextInfo
+	{
+		std::string text;
+		uint32_t ptSize;
+		glm::fvec4 fgColor;
+		glm::fvec4 bgColor;
+	};
+	
 	template<typename ret, typename ...Args>
 	struct MulticastContainer
 	{
-		MulticastContainer(std::function<ret(Args...)>&& _func, Args&&... _arguments)
+		MulticastContainer(std::function<ret(Args...)>&& _func, Args... args)
 			: func{ std::move(_func) }
-			, arguments{ std::move(_arguments...) }
+			, arguments{ args... }
 		{
 		}
 
-		MulticastContainer(const std::function<ret(Args...)>& _func, const Args&... _args)
+		MulticastContainer(const std::function<ret(Args...)>& _func, Args... args)
 			: func{ _func }
-			, arguments{ _args... }
+			, arguments{ args... }
 		{
 		}
 
@@ -190,8 +198,13 @@ namespace dae
 	{
 	public:
 
-		MulticastCondition(std::function<bool(Args...)>&& fc, Args&&... args)
-			: m_Container{ std::move(fc),std::move(args...) }
+		//MulticastCondition(std::function<bool(Args...)>&& fc, Args&&... args)
+		//	: m_Container{ std::move(fc),std::move(args...) }
+		//{
+		//}
+
+		MulticastCondition(std::function<bool(Args...)>&& fc,Args... args)
+			: m_Container(std::move(fc),args...)
 		{
 		}
 

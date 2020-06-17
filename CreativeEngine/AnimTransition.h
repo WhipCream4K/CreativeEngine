@@ -7,6 +7,7 @@ namespace dae
 	class AnimTransition
 	{
 	public:
+		
 		AnimTransition(std::vector<ConditionFunc>&& conditions, std::weak_ptr<AnimationClip>&& targetState);
 
 		bool IsTriggered() const;

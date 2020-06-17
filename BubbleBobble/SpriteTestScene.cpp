@@ -39,16 +39,16 @@ void SpriteTestScene::SceneInitialize()
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
 	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
 	auto spriteRenderer{ daeLogo->CreateComponent<SpriteRenderer>() };
-	spriteRenderer->SetSprite(daeLogoSprite);
+	spriteRenderer->SetSprite(daeLogoSprite,true);
 
 	const auto& debugRuler = CreateGameObject<GameObject>({ 400.0f,0.0f,3.0f });
 	spriteRenderer = debugRuler->CreateComponent<SpriteRenderer>();
-	spriteRenderer->SetSprite(debugRotation);
+	spriteRenderer->SetSprite(debugRotation,true);
 
 	const auto& backGroundObject = CreateGameObject<GameObject>(glm::fvec3{ 0.0f,0.0f,30.0f });
 	backGroundObject->GetTransform().SetScale(2.5f, 2.5f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
-	spriteRenderer->SetSprite(background);
+	spriteRenderer->SetSprite(background,true);
 	
 	const auto& player = CreateGameObject<PlayerCharacter>({ 0.0f,-130.0f,2.0f });
 	player->GetTransform().SetScale(15.0f, 15.0f);

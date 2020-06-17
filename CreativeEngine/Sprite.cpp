@@ -6,7 +6,6 @@
 dae::Sprite::Sprite()
 	: m_TextureRect{}
 	, m_Pivot{}
-	, m_Dimension{}
 	, m_pTexture{}
 	, m_IsFlipX{}
 	, m_IsFlipY{}
@@ -16,7 +15,6 @@ dae::Sprite::Sprite()
 dae::Sprite::Sprite(std::weak_ptr<ITextureEntity>&& textureEntity)
 	: m_TextureRect{}
 	, m_Pivot{}
-	, m_Dimension{}
 	, m_pTexture{ std::move(textureEntity) }
 	, m_IsFlipX{}
 	, m_IsFlipY{}
@@ -38,8 +36,8 @@ auto dae::Sprite::Create(std::weak_ptr<ITextureEntity>&& textureEntity) -> std::
 }
 
 auto dae::Sprite::CreateSpriteSheet(std::weak_ptr<ITextureEntity> texture, const glm::fvec2& minBound,
-                                    const glm::fvec2& dimension, uint32_t amount, float pixelGap,
-                                    SpriteFlow flow) -> std::vector<std::shared_ptr<Sprite>>
+	const glm::fvec2& dimension, uint32_t amount, float pixelGap,
+	SpriteFlow flow) -> std::vector<std::shared_ptr<Sprite>>
 {
 	std::vector<std::shared_ptr<Sprite>> container{ amount };
 	glm::fvec2 subMinBound{ minBound.x,minBound.y };
@@ -49,7 +47,7 @@ auto dae::Sprite::CreateSpriteSheet(std::weak_ptr<ITextureEntity> texture, const
 	{
 		auto subSprite{ std::make_shared<Sprite>(texture.lock()) };
 
-		subSprite->SetDimension(dimension,true);
+		subSprite->SetDimension(dimension, true);
 		subSprite->SetSubTextureMinBounding(subMinBound);
 
 		subMinBound.x += (dimension.x + pixelGap) * leftToRight;
@@ -74,7 +72,7 @@ auto dae::Sprite::CreateSpriteSheet(const std::string& texturePath, const std::s
 	{
 		auto subSprite{ std::make_shared<Sprite>(texture) };
 
-		subSprite->SetDimension(dimension,true);
+		subSprite->SetDimension(dimension, true);
 		subSprite->SetSubTextureMinBounding(subMinBound);
 
 		subMinBound.x += (dimension.x + pixelGap) * leftToRight;
@@ -210,7 +208,7 @@ void dae::Sprite::SetDimension(const glm::fvec2& dimension, bool resetPivot)
 	m_TextureRect.z = dimension.x;
 	m_TextureRect.w = dimension.y;
 
-	if(resetPivot)
+	if (resetPivot)
 	{
 		m_Pivot.x = dimension.x / 2.0f;
 		m_Pivot.y = dimension.y / 2.0f;
@@ -228,13 +226,7 @@ void dae::Sprite::SetDefaultBoundingAndPivot(const glm::fvec2& textureDimension)
 	m_TextureRect = { 0.0f,0.0f,textureDimension.x,textureDimension.y };
 }
 
-void dae::Sprite::Render(const RenderTransform& transform) const
+void dae::Sprite::Render(const TextureInfo& textureInfo, const RenderTransform& transform) const
 {
-	TextureInfo info{};
-	info.textureRect = m_TextureRect;
-	info.isFlipX = m_IsFlipX;
-	info.isFlipY = m_IsFlipY;
-	info.pivot = m_Pivot;
-
-	m_pTexture.lock()->Render(info, transform);
+	m_pTexture.lock()->Render(textureInfo, transform);
 }

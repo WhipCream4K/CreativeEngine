@@ -23,9 +23,9 @@ void dae::SDLTextureData::Render(const TextureInfo& textureInfo, const RenderTra
 
 	int flipMode{ SDL_FLIP_NONE };
 	if (textureInfo.isFlipX)
-		flipMode |= SDL_FLIP_HORIZONTAL;
-	if (textureInfo.isFlipY)
 		flipMode |= SDL_FLIP_VERTICAL;
+	if (textureInfo.isFlipY)
+		flipMode |= SDL_FLIP_HORIZONTAL;
 	
 	// TODO: Now this here we would get the renderer service but i don't have another service
 	SDL_RenderCopyEx(Renderer::GetSDLRenderer().get(), m_pTextureData.get(),

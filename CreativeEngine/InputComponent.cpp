@@ -60,11 +60,7 @@ void dae::InputComponent::Update()
 		if (handle.second.isTriggered)
 		{
 			handle.second.action->Invoke(handle.second.totalAxisValue);
+			handle.second.isTriggered = false;
 		}
 	}
-}
-
-void dae::InputComponent::InputActionConditionalExecute()
-{
-
 }

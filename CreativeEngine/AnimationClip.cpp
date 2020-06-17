@@ -52,9 +52,9 @@ void dae::AnimationClip::AddProperty(std::weak_ptr<SpriteRenderer> spriteRendere
 	AnimTracker tracker{ uint32_t(sprites.size())};
 	m_ObjectProperties.emplace_back(tracker);
 	auto& temp = m_ObjectProperties.back();
-	const auto changeSprite = [&sprites, &temp](std::weak_ptr<SpriteRenderer> renderer)
+	const auto changeSprite = [sprites, &temp](std::weak_ptr<SpriteRenderer> renderer)
 	{
-		renderer.lock()->SetSprite(sprites[temp.m_CurrentKeyFrame]);
+		renderer.lock()->SetSprite(sprites[temp.m_CurrentKeyFrame],false);
 	};
 
 	temp.SetExecuteFunction(std::make_shared<AnimFunc<SpriteRenderer>>(changeSprite, spriteRenderer));

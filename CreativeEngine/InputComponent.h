@@ -17,7 +17,6 @@ namespace dae
 		using ObjectFunctionDelegate = void(T::*)();
 		template<typename T, typename ...Args>
 		using ObjectVariadicDelegate = void(T::*)(all_none_void<Args...>);
-		using AxisMulticastDelegate = std::shared_ptr<IAxisMulticast>;
 	};
 
 	struct AxisHandlerSignature
@@ -26,6 +25,7 @@ namespace dae
 		using ObjectFunctionDelegate = void(T::*)(float);
 		template<typename T, typename ...Args>
 		using ObjectVariadicDelegate = void(T::*)(float, std::enable_if_t<(sizeof...(Args) > 0), size_t>);
+		using AxisMulticastDelegate = std::shared_ptr<IAxisMulticast>;
 	};
 
 	template<typename T, typename ...Args>
@@ -56,7 +56,7 @@ namespace dae
 
 	struct AxisHandle
 	{
-		AxisHandle(const std::string& aAxisName, ActionHandlerSignature::AxisMulticastDelegate&& func)
+		AxisHandle(const std::string& aAxisName, AxisHandlerSignature::AxisMulticastDelegate&& func)
 			: action(std::move(func))
 			, axisName{ aAxisName }
 			, totalAxisValue{}
@@ -66,7 +66,7 @@ namespace dae
 
 		void ShouldExecute(float axisValue);
 
-		ActionHandlerSignature::AxisMulticastDelegate action;
+		AxisHandlerSignature::AxisMulticastDelegate action;
 		std::string axisName;
 		float totalAxisValue;
 		bool isTriggered;
@@ -149,15 +149,13 @@ namespace dae
 		InputAxisNoParamsCallback(void(UserClass::* funcName)(float), std::weak_ptr<UserClass>&& callObject)
 			: funcPtr{ funcName }
 			, caller{ std::move(callObject) }
-			, axisValue{}
 		{
 		}
 
 		void Invoke(float axisValue) override;
 
-		FuncPtr<UserClass> funcPtr;
+		VariadicFuncPtr<UserClass,float> funcPtr;
 		std::weak_ptr<UserClass> caller;
-		float axisValue;
 	};
 
 	template <typename UserClass, typename ... Args>
@@ -219,7 +217,6 @@ namespace dae
 		std::unordered_map<std::string, ActionHandle> m_ActionHandle;
 		std::unordered_map<std::string, AxisHandle> m_AxisHandle;
 
-		void InputActionConditionalExecute();
 	};
 
 	template <typename UserClass>

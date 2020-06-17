@@ -44,7 +44,7 @@ auto dae::Text::Create(std::weak_ptr<IFontEntity>&& fontEntity, const std::strin
 //	return textObj;
 //}
 
-void dae::Text::Render(const RenderTransform& transform) const
+void dae::Text::Render([[maybe_unused]]const TextureInfo& textureInfo, const RenderTransform& transform) const
 {
 	// create render info for font to render
 	TextInfo info{};

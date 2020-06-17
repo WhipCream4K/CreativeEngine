@@ -12,5 +12,6 @@ dae::MainGame::MainGame()
 
 void dae::MainGame::GameInitialize()
 {
-	SceneManager::AddScene(std::make_shared<MovementTestScene>());
+	//SceneManager::AddScene(std::make_shared<MovementTestScene>());
+	SceneManager::AddScene(std::make_shared<AudioTestScene>());
 }

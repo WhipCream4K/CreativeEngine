@@ -16,7 +16,7 @@ namespace dae
 		template<typename T = const IDrawable>
 		std::shared_ptr<std::enable_if_t<std::is_base_of_v<IDrawable, T>, T>> GetSmart() const;
 
-		virtual void Render(const RenderTransform&) const = 0;
+		virtual void Render(const TextureInfo&,const RenderTransform&) const = 0;
 	};
 
 	template <typename T>

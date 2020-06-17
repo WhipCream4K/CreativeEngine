@@ -17,7 +17,7 @@ void dae::Renderer::RenderImpl()
 
 	for (const auto& texture : m_RenderTexture)
 	{
-		texture.drawObject.lock()->Render(texture.transform);
+		texture.drawObject.lock()->Render(texture.textureInfo,texture.transform);
 		
 		//if (SDL_RenderCopyEx(m_pRenderer.get(),
 		//	surface.renderTexture.lock().get(),
@@ -83,30 +83,29 @@ void dae::Renderer::InitializeImpl(std::weak_ptr<SDL_Window> pWindow)
 //	//m_RenderTexture.emplace_back(renderSurface);
 //}
 
-void dae::Renderer::AssignRenderQueueImpl(const RenderInfo& renderTexture,
-	std::weak_ptr<ITextureEntity> textureEntity, float depth)
-{
-	renderTexture;
-	textureEntity;
-	depth;
-	//m_RenderTexture.emplace_back(m_RenderTexture(renderTexture,textureEntity,depth));
-}
-
-void dae::Renderer::AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const RenderTransform& transform, float depth)
-{
-	RenderTexture renderTexture{ std::move(drawObject),transform,depth };
-	m_RenderTexture.emplace_back(renderTexture);
-}
-
-void dae::Renderer::AssignRenderQueueImpl(std::shared_ptr<const IDrawable>&& drawObject, const RenderTransform& transform,
+void dae::Renderer::AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const RenderTransform& transform,
 	float depth)
 {
 	drawObject;
 	transform;
 	depth;
-	//RenderTexture renderTexture{ std::move(drawObject),transform,depth };
-	//m_RenderTexture.emplace_back(renderTexture);
 }
+
+void dae::Renderer::AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const TextureInfo& textureInfo, const RenderTransform& transform, float depth)
+{
+	RenderTexture renderTexture{std::move(drawObject),textureInfo,transform,depth };
+	m_RenderTexture.emplace_back(renderTexture);
+}
+
+//void dae::Renderer::AssignRenderQueueImpl(std::shared_ptr<IDrawable>&& drawObject, const RenderTransform& transform,
+//	float depth)
+//{
+//	drawObject;
+//	transform;
+//	depth;
+//	//RenderTexture renderTexture{ std::move(drawObject),transform,depth };
+//	//m_RenderTexture.emplace_back(renderTexture);
+//}
 //void dae::Renderer::AssignRenderQueueImpl(const RenderInfo& renderTexture, const glm::fvec4& boundingBox,
 //                                          const glm::fvec2& pivot, const glm::fvec2& position, const glm::fvec2& scale, float rotation, float depth)
 //{

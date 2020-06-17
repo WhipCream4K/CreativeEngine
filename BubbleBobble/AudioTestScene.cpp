@@ -21,6 +21,9 @@ void AudioTestScene::SceneInitialize()
 	const auto daeLogoSprite{ Sprite::Create("./Resources/logo.png","DAELogo") };
 	const auto background{ Sprite::Create("./Resources/background.jpg","BlackBG") };
 
+	m_Sprites.emplace_back(daeLogoSprite);
+	m_Sprites.emplace_back(background);
+	
 	const auto& gotcha{ ResourceManager::Load<AudioClip>("./Resources/Sound/Gotcha.mp3","RickRoll") };
 	//const auto& font{ ResourceManager::Load<FontAsset>("./Resources/Lingua.otf","Lingua") };
 
@@ -29,12 +32,12 @@ void AudioTestScene::SceneInitialize()
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
 	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
 	auto spriteRenderer{ daeLogo->CreateComponent<SpriteRenderer>() };
-	spriteRenderer->SetSprite(daeLogoSprite);
+	spriteRenderer->SetSprite(daeLogoSprite,true);
 
 	const auto& backGroundObject = CreateGameObject<GameObject>(glm::fvec3{ 0.0f,0.0f,30.0f });
 	backGroundObject->GetTransform().SetScale(2.5f, 2.5f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
-	spriteRenderer->SetSprite(background);
+	spriteRenderer->SetSprite(background,true);
 
 	//const auto& text{ CreateGameObject({0.0f,0.0f,2.0f}) };
 	//auto textRenderer = text->CreateComponent<TextRenderer>();

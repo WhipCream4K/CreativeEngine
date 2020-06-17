@@ -3,14 +3,6 @@
 
 namespace dae
 {
-	struct TextInfo
-	{		
-		std::string text;
-		uint32_t ptSize;
-		glm::fvec4 fgColor;
-		glm::fvec4 bgColor;
-	};
-	
 	class Texture2D;
 	struct RenderTransform;
 	class IFontEntity : public BaseAsset

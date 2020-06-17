@@ -82,13 +82,12 @@ namespace dae
 
 		glm::fvec4 m_TextureRect;
 		glm::fvec2 m_Pivot;
-		glm::fvec2 m_Dimension;
 		std::weak_ptr<ITextureEntity> m_pTexture;
 		bool m_IsFlipX;
 		bool m_IsFlipY;
 
 		void SetDefaultBoundingAndPivot(const glm::fvec2& textureDimension);
-		void Render(const RenderTransform& transform) const override;
+		void Render(const TextureInfo& textureInfo,const RenderTransform& transform) const override;
 	};
 }
 

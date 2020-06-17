@@ -37,7 +37,7 @@ namespace dae
 		std::string m_Text;
 		uint32_t m_Size;
 		
-		void Render(const RenderTransform& transform) const override;
+		void Render(const TextureInfo& textureInfo,const RenderTransform& transform) const override;
 	};
 }
 

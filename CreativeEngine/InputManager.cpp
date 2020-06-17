@@ -56,7 +56,6 @@ dae::InputAxisMappingGroup& dae::InputManager::GetAxisMappingGroup(const std::st
 
 void dae::InputManager::ReadInputs()
 {
-	SDL_PumpEvents();
 
 	for (auto& group : m_InputActionMappingGroup)
 	{
@@ -208,6 +207,7 @@ bool dae::InputManager::InputAxisExecuteCondition(InputAxis& input) const
 
 bool dae::InputManager::IsMouseKeyPressed(MouseKey mouseKey, float* axisValue) const
 {
+	SDL_PumpEvents();
 	int mouseX{}, mouseY{};
 	const uint8_t mouseState{ static_cast<uint8_t>(SDL_GetRelativeMouseState(&mouseX,&mouseY)) };
 
@@ -226,6 +226,7 @@ bool dae::InputManager::IsMouseKeyPressed(MouseKey mouseKey, float* axisValue) c
 
 bool dae::InputManager::IsKeyboardKeyPressed(SDL_Keycode keycode) const
 {
+	SDL_PumpEvents();
 	const uint8_t* keyboardState{ static_cast<const uint8_t*>(SDL_GetKeyboardState(nullptr)) };
 	return bool(keyboardState[SDL_GetScancodeFromKey(keycode)]);
 }
