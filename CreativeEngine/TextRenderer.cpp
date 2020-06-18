@@ -78,5 +78,5 @@ void dae::TextRenderer::Render() const
 
 	const auto& gameObjTransform{ GetGameObject()->GetTransform() };
 	const RenderTransform transform{ gameObjTransform };
-	Renderer::AssignRenderQueue(m_pTextObj, transform, gameObjTransform.GetPosition().z);
+	Renderer::AssignRenderQueue(m_pTextObj, TextureInfo(),transform, gameObjTransform.GetPosition().z);
 }

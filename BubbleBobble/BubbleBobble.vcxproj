@@ -75,15 +75,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,6 +107,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\SDL2_ttf\lib\x86;$(SolutionDir)Libs\SDL2_image\lib\x86;$(SolutionDir)Libs\SDL2\lib\x86;$(SolutionDir)Libs\vld\lib\Win32;$(SolutionDir)Libs\fmod\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -122,6 +129,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\vld\lib\Win64;$(SolutionDir)Libs\SDL2\lib\x64;$(SolutionDir)Libs\SDL2_image\lib\x64;$(SolutionDir)Libs\SDL2_ttf\lib\x64;$(SolutionDir)Libs\fmod\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -145,6 +155,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\SDL2_ttf\lib\x86;$(SolutionDir)Libs\SDL2_image\lib\x86;$(SolutionDir)Libs\SDL2\lib\x86;$(SolutionDir)Libs\vld\lib\Win32;$(SolutionDir)Libs\fmod\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -168,9 +181,13 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\vld\lib\Win64;$(SolutionDir)Libs\SDL2\lib\x64;$(SolutionDir)Libs\SDL2_image\lib\x64;$(SolutionDir)Libs\SDL2_ttf\lib\x64;$(SolutionDir)Libs\fmod\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioTestScene.cpp" />
+    <ClCompile Include="BubbleBobble.cpp" />
     <ClCompile Include="DAELogo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainGame.cpp" />
@@ -186,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioTestScene.h" />
+    <ClInclude Include="BubbleBobble.h" />
     <ClInclude Include="DAELogo.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MovementTestScene.h" />

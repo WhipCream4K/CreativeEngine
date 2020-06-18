@@ -10,7 +10,7 @@ PlayerCharacter::PlayerCharacter()
 	: m_pPlayerSpriteSheet{}
 	, m_IsMoving{}
 {
-	SetMaxSpeed(500.0f);
+	SetMaxSpeed(200.0f);
 }
 
 void PlayerCharacter::Awake()
@@ -64,7 +64,7 @@ void PlayerCharacter::Awake()
 		movingClip->AddProperty(m_pSpriteRenderer, m_pPlayerSpriteSheet);
 		movingClip->SetSampleRate(4);
 
-		// order matter
+		// order matters
 		animator->AddAnimationClip(idle);
 		animator->AddAnimationClip(movingClip);
 	}

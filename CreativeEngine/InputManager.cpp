@@ -137,6 +137,8 @@ bool dae::InputManager::InputActionExecuteCondition(InputAction& input) const
 	}
 
 	return input.keyState == KeyState::K_Release || input.keyState == KeyState::K_Pressed;
+
+#pragma region Possibly Garbage
 	//switch (input.inputEvent)
 	//{
 	//case InputEvent::IE_Pressed:
@@ -177,6 +179,7 @@ bool dae::InputManager::InputActionExecuteCondition(InputAction& input) const
 	//default:
 	//	break;
 	//}
+#pragma endregion 
 }
 
 bool dae::InputManager::InputAxisExecuteCondition(InputAxis& input) const

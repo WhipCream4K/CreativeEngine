@@ -19,7 +19,7 @@ void AudioTestScene::SceneInitialize()
 	using namespace dae;
 
 	const auto daeLogoSprite{ Sprite::Create("./Resources/logo.png","DAELogo") };
-	const auto background{ Sprite::Create("./Resources/background.jpg","BlackBG") };
+	const auto background{ Sprite::Create("./Resources/Sprite/lmao.png","BigLmao") };
 
 	m_Sprites.emplace_back(daeLogoSprite);
 	m_Sprites.emplace_back(background);
@@ -35,7 +35,7 @@ void AudioTestScene::SceneInitialize()
 	spriteRenderer->SetSprite(daeLogoSprite,true);
 
 	const auto& backGroundObject = CreateGameObject<GameObject>(glm::fvec3{ 0.0f,0.0f,30.0f });
-	backGroundObject->GetTransform().SetScale(2.5f, 2.5f);
+	//backGroundObject->GetTransform().SetScale(0.0f,0.0f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(background,true);
 

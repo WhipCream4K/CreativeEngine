@@ -86,9 +86,8 @@ void dae::Renderer::InitializeImpl(std::weak_ptr<SDL_Window> pWindow)
 void dae::Renderer::AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const RenderTransform& transform,
 	float depth)
 {
-	drawObject;
-	transform;
-	depth;
+	RenderTexture renderTexture{ std::move(drawObject),TextureInfo(),transform,depth };
+	m_RenderTexture.emplace_back(renderTexture);
 }
 
 void dae::Renderer::AssignRenderQueueImpl(std::weak_ptr<IDrawable>&& drawObject, const TextureInfo& textureInfo, const RenderTransform& transform, float depth)
