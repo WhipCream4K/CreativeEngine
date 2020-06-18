@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "Sprite.h"
 #include "SpriteRenderer.h"
+#include "Bubble.h"
 
 BubbleBobble::BubbleBobble()
 	: Scene("BubbleBobble")
@@ -25,6 +26,9 @@ void BubbleBobble::SceneInitialize()
 	const auto level{ CreateGameObject({0.0f,0.0f,29.0f}) };
 	spriteRenderer = level->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(levelSprite,true);
+
+	//const auto bubble = CreateGameObject<Bubble>({0.0f,0.0f,1.0f});
+	//bubble->GetTransform().SetScale(4.0f, 4.0f);
 	
 	m_pSprites.emplace_back(black);
 	m_pSprites.emplace_back(levelSprite);
@@ -44,6 +48,9 @@ void BubbleBobble::SetUpInputMappingGroup()
 	const auto& inputManager{ GetSceneContext().pInputManager };
 	auto& actionGroup = inputManager->AddInputActionGroup("Jump");
 	actionGroup.AddKey(dae::Key(dae::Device::D_Keyboard, SDLK_SPACE));
+	//actionGroup.AddKey(dae::Key(dae::Device::D_Keyboard, SDLK_q));
+	auto& reset = inputManager->AddInputActionGroup("Reset");
+	reset.AddKey(dae::Key(dae::Device::D_Keyboard, SDLK_q));
 	auto& horizontal = inputManager->AddInputAxisGroup("Horizontal");
 	horizontal.AddKey(dae::Key(dae::Device::D_Keyboard, SDLK_LEFT), -1.0f);
 	horizontal.AddKey(dae::Key(dae::Device::D_Keyboard, SDLK_RIGHT), 1.0f);

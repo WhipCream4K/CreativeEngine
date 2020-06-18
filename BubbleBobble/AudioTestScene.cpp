@@ -25,9 +25,6 @@ void AudioTestScene::SceneInitialize()
 	m_Sprites.emplace_back(background);
 	
 	const auto& gotcha{ ResourceManager::Load<AudioClip>("./Resources/Sound/Gotcha.mp3","RickRoll") };
-	//const auto& font{ ResourceManager::Load<FontAsset>("./Resources/Lingua.otf","Lingua") };
-
-	//font;
 
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
 	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
@@ -38,13 +35,6 @@ void AudioTestScene::SceneInitialize()
 	//backGroundObject->GetTransform().SetScale(0.0f,0.0f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(background,true);
-
-	//const auto& text{ CreateGameObject({0.0f,0.0f,2.0f}) };
-	//auto textRenderer = text->CreateComponent<TextRenderer>();
-	//textRenderer->SetText("Congratulations! You've been rick rolled");
-	//textRenderer->SetFontAsset(font);
-	//textRenderer->SetSize(50);
-	//textRenderer->SetForegroundColor({ 1.0f,1.0f,1.0f,1.0f });
 
 	const auto& rick{ CreateGameObject() };
 	m_AudioPlayer = rick->CreateComponent<AudioSource>();

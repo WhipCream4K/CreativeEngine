@@ -5,6 +5,9 @@
 
 void dae::Animator::Update()
 {
+	if (!m_CurrentClip.lock())
+		m_CurrentClip = m_Default;
+	
 	const auto sharedTemp = m_CurrentClip.lock();
 	
 	if(sharedTemp)
@@ -26,13 +29,16 @@ void dae::Animator::Update()
 		if (transitionTriggered)
 			m_CurrentClip = triggeredTransition->GetTargetState();
 
-		m_CurrentClip.lock()->Update();
+		if (m_CurrentClip.lock()->Update())
+		{
+			m_CurrentClip = m_Default;
+		}
 	}
 }
 
 void dae::Animator::AddAnimationClip(std::shared_ptr<AnimationClip> clip)
 {
 	if (m_Clips.empty())
-		m_CurrentClip = clip;
+		m_Default = clip;
 	m_Clips.emplace_back(clip);
 }

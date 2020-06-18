@@ -11,19 +11,19 @@ dae::Scene::Scene(const std::string& sceneName)
 {
 }
 
-//void dae::Scene::AddGameObject(std::shared_ptr<GameObject> pGameObject)
-//{
-//	if (pGameObject)
-//	{
-//		m_pGameObjects.push_back(pGameObject); // create a copy of the gameObject result in increasing the ref count
-//		pGameObject->m_pRefScene = shared_from_this();
-//	}
-//}
+auto dae::Scene::Destroy(const std::shared_ptr<IInternalGameObject>& ref) noexcept -> void
+{
+	for (auto& gameObject : m_pGameObjects)
+	{
+		if (ref == gameObject)
+			gameObject->m_ToBeDestroyed = true;
+	}
+}
 
 void dae::Scene::RootRender() const
 {
 	Render();
-	
+
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootRender();
@@ -43,7 +43,7 @@ void dae::Scene::RootInitialize()
 
 	SceneInitialize();
 	SetUpInputMappingGroup();
-	
+
 	m_Context.pGameTime->Start();
 
 #ifdef ASYNC
@@ -77,26 +77,29 @@ void dae::Scene::RootInitialize()
 	{
 		future.get();
 	}
-	
+
 #else
-	
+
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootAwake();
 	}
-	
+
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootStart();
 	}
-	
+
 #endif
-	
+
 	m_IsInit = true;
 }
 
 void dae::Scene::RootUpdate()
 {
+	AddNewPendingGameObjects();
+	DestroyPendingGameObject();
+	
 	m_Context.pGameTime->Update();
 	m_Context.pInputManager->ReadInputs();
 
@@ -111,4 +114,25 @@ void dae::Scene::RootUpdate()
 	{
 		gameObject->RootLateUpdate();
 	}
+}
+
+void dae::Scene::DestroyPendingGameObject()
+{
+	const auto result = std::remove_if(m_pGameObjects.begin(), m_pGameObjects.end(), [](const std::shared_ptr<IInternalGameObject>& ref)
+		{
+			return ref->m_ToBeDestroyed;
+		});
+
+	if(result != m_pGameObjects.end())
+		m_pGameObjects.erase(result);
+}
+
+void dae::Scene::AddNewPendingGameObjects()
+{
+	for (auto & pending : m_pPendingAdd)
+	{
+		m_pGameObjects.emplace_back(std::move(pending));
+	}
+
+	m_pPendingAdd.clear();
 }

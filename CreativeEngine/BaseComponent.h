@@ -65,17 +65,5 @@ namespace dae
 		std::shared_ptr<BaseComponent> temp{ shared_from_this() };
 		return std::static_pointer_cast<T>(temp);
 	}
-
-	//template <typename T>
-	//constexpr std::shared_ptr<const GameComponent<T>> BaseComponent::GetShared() const
-	//{
-	//	return std::static_pointer_cast<const T>(shared_from_this());
-	//}
-
-	//template <typename T>
-	//constexpr std::shared_ptr<GameComponent<T>> BaseComponent::GetShared()
-	//{
-	//	return std::static_pointer_cast<T>(shared_from_this());
-	//}
 }
 

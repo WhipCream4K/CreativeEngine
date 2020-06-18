@@ -23,12 +23,6 @@ namespace dae
 			return GetInstance()->LoadImpl<Asset<T>>(assetPath, assetName);
 		}
 
-		//template<typename T>
-		//constexpr static std::shared_ptr<Asset<T>> Load(std::shared_ptr<Asset<T>> asset)
-		//{
-		//	return GetInstance()->LoadImpl<Asset<T>>(asset);
-		//}
-
 		static const char* GetResourceName(std::weak_ptr<BaseAsset> pAsset)
 		{
 			return GetInstance()->GetResourceNameImpl(std::move(pAsset));
@@ -39,12 +33,6 @@ namespace dae
 		{
 			return GetInstance()->GetAssetImpl<Asset<T>>(assetName);
 		}
-
-		//template<typename T = EngineAsset>
-		//constexpr static std::shared_ptr<InAsset<T>> Store(std::shared_ptr<InAsset<T>> engineAsset)
-		//{
-		//	return GetInstance()->StoreImpl(engineAsset);
-		//}
 
 		template<typename T = EngineAsset>
 		constexpr static std::shared_ptr<InAsset<T>> Store(const std::string& name)
@@ -62,8 +50,6 @@ namespace dae
 		const char* GetResourceNameImpl(std::weak_ptr<BaseAsset> pAsset);
 		template<typename T>
 		std::shared_ptr<T> GetAssetImpl(const std::string& assetName);
-		//template<typename T>
-		//std::shared_ptr<T> StoreImpl(std::shared_ptr<T> engineAsset);
 		template<typename T>
 		std::shared_ptr<T> StoreImpl(const std::string& name);
 
@@ -105,20 +91,7 @@ namespace dae
 		const auto& resources{ m_pAssets.find(assetName) };
 		return	resources != m_pAssets.end() ? std::static_pointer_cast<T>(resources->second) : nullptr;
 	}
-
-
-	//template <typename T>
-	//std::shared_ptr<T> ResourceManager::StoreImpl(std::shared_ptr<T> engineAsset)
-	//{
-	//	const std::string& assetName = engineAsset->GetName();
-	//	const auto& resource{ m_pEngineAssets.find(assetName) };
-
-	//	if (resource == m_pEngineAssets.end())
-	//		m_pEngineAssets.try_emplace(assetName, engineAsset);
-
-	//	return resource->second;
-	//}
-
+	
 	template <typename T>
 	std::shared_ptr<T> ResourceManager::StoreImpl(const std::string& name)
 	{

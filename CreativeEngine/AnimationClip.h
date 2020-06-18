@@ -46,6 +46,7 @@ namespace dae
 		uint32_t m_CurrentKeyFrame;
 		float m_Interval;
 		float m_Timer;
+		bool m_IsFinished;
 	};
 
 	class AnimationClip
@@ -63,11 +64,13 @@ namespace dae
 		void SetSampleRate(uint32_t amount) { m_SampleRate = amount; }
 
 		// Update all the object properties keyframe
-		void Update();
+		bool Update();
 
 		void AddTransition(const AnimTransition& transition);
 
 		const std::vector<AnimTransition>& GetTransitions() const { return m_Transitions; }
+
+		bool IsFinishedPlaying();
 
 	private:
 

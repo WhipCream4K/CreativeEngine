@@ -3,12 +3,15 @@
 #include "Animator.h"
 #include "SpriteRenderer.h"
 #include "ResourceManager.h"
+#include "Bubble.h"
 
 #include <iostream>
+
 
 PlayerCharacter::PlayerCharacter()
 	: m_pPlayerSpriteSheet{}
 	, m_IsMoving{}
+	, m_IsShooting{}
 {
 	SetMaxSpeed(200.0f);
 }
@@ -23,32 +26,37 @@ void PlayerCharacter::Awake()
 	m_pSpriteRenderer = CreateComponent<SpriteRenderer>();
 	const auto& animator = CreateComponent<Animator>();
 
-	const auto characterTextureSrc{ ResourceManager::Load<DefaultTextureData>("./Resources/PlayerCharacterSheet.tga","Player") };
+	const auto characterTextureSrc{ ResourceManager::Load<DefaultTextureData>("./Resources/Sprite/Sprites0.png","Sprite0") };
+	const auto characterTextureSrc2{ ResourceManager::Load<DefaultTextureData>("./Resources/Sprite/Sprites1.png","Sprite1") };
 
-	// Create sprite sheet
-	{
-		const uint32_t amount{ 4 };
-		const glm::fvec2 dimension{ 16.0f,16.0f };
-		glm::fvec2 minBound{ 2.0f,35.0f };
-		const uint32_t pixelGap{ 2 };
+	m_pPlayerSpriteSheet = Sprite::CreateSpriteSheet(characterTextureSrc, { 0.0f,0.0f }, { 16.0f,16.0f }, 8, 18.0f);
+	m_pShootingSpriteSheet = Sprite::CreateSpriteSheet(characterTextureSrc2, { 0.0f,64.0f }, { 16.0f,16.0f }, 8, 18.0f);
 
-		for (uint32_t i = 0; i < amount; ++i)
-		{
-			auto sprite{ Sprite::Create(characterTextureSrc) };
+	//// Create sprite sheet
+	//{
+	//	const uint32_t amount{ 4 };
+	//	const glm::fvec2 dimension{ 16.0f,16.0f };
+	//	glm::fvec2 minBound{ 2.0f,35.0f };
+	//	const uint32_t pixelGap{ 2 };
 
-			sprite->SetDimension(i == 2 || i == 3 ? glm::fvec2{ 15.0f,16.0f } : dimension, true);
-			sprite->SetSubTextureMinBounding(minBound);
+	//	for (uint32_t i = 0; i < amount; ++i)
+	//	{
+	//		auto sprite{ Sprite::Create(characterTextureSrc) };
 
-			minBound.x += (i == 2 || i == 3 ? glm::fvec2{ 15.0f,16.0f } : dimension).x + pixelGap;
+	//		sprite->SetDimension(i == 2 || i == 3 ? glm::fvec2{ 15.0f,16.0f } : dimension, true);
+	//		sprite->SetSubTextureMinBounding(minBound);
 
-			m_pPlayerSpriteSheet.emplace_back(sprite);
-		}
-	}
+	//		minBound.x += (i == 2 || i == 3 ? glm::fvec2{ 15.0f,16.0f } : dimension).x + pixelGap;
+
+	//		m_pPlayerSpriteSheet.emplace_back(sprite);
+	//	}
+	//}
 
 	// Create Animator
 	{
 		const auto movingClip{ AnimationClip::Create(GetShared<PlayerCharacter>()) };
 		const auto idle{ AnimationClip::Create(GetShared<PlayerCharacter>()) };
+		const auto shooting{ AnimationClip::Create(GetShared<PlayerCharacter>()) };
 
 		idle->AddProperty(m_pSpriteRenderer, { m_pPlayerSpriteSheet[0] });
 
@@ -56,17 +64,25 @@ void PlayerCharacter::Awake()
 		{
 			return isMoving;
 		};
-		
-		idle->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(playerMovement,m_IsMoving) }, movingClip));
-		movingClip->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(std::not_fn(playerMovement),m_IsMoving) }, idle));
-		
-		m_pSpriteRenderer->SetSprite(m_pPlayerSpriteSheet[0],true);
-		movingClip->AddProperty(m_pSpriteRenderer, m_pPlayerSpriteSheet);
-		movingClip->SetSampleRate(4);
 
-		// order matters
+		idle->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(playerMovement,m_IsMoving) }, movingClip));
+		idle->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(playerMovement,m_IsShooting) }, shooting));
+		movingClip->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(std::not_fn(playerMovement),m_IsMoving) }, idle));
+		movingClip->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(playerMovement,m_IsShooting) }, shooting));
+		shooting->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(std::not_fn(playerMovement),m_IsShooting) }, idle));
+		shooting->AddTransition(AnimTransition({ std::make_shared<MulticastCondition<bool&>>(std::not_fn(playerMovement),m_IsShooting) }, movingClip));
+
+		m_pSpriteRenderer->SetSprite(m_pPlayerSpriteSheet[0], true);
+		movingClip->AddProperty(m_pSpriteRenderer, m_pPlayerSpriteSheet);
+		movingClip->SetSampleRate(8);
+
+		shooting->AddProperty(m_pSpriteRenderer, m_pShootingSpriteSheet);
+		shooting->SetSampleRate(8);
+
 		animator->AddAnimationClip(idle);
 		animator->AddAnimationClip(movingClip);
+		animator->AddAnimationClip(shooting);
+		animator->SetDefaultAnimClip(idle);
 	}
 
 }
@@ -78,13 +94,20 @@ void PlayerCharacter::SetUpInputComponent()
 
 	// Setup input binding here
 	m_pInputComponent->BindAction("Jump", dae::InputEvent::IE_Released, GetShared<PlayerCharacter>(), &PlayerCharacter::JumpTest);
+	m_pInputComponent->BindAction("Reset", dae::InputEvent::IE_Released, GetShared<PlayerCharacter>(), &PlayerCharacter::Reset);
 	m_pInputComponent->BindAxis("Horizontal", GetShared<PlayerCharacter>(), &PlayerCharacter::MoveHorizontal);
 	m_pInputComponent->BindAxis("Vertical", GetShared<PlayerCharacter>(), &PlayerCharacter::MoveVertical);
 }
 
 void PlayerCharacter::JumpTest()
 {
-	std::cout << "Yay finally it works\n";
+	GetScene()->Instantiate<Bubble>(GetTransform().GetPosition(),{},{4.0f,4.0f});
+	m_IsShooting = true;
+}
+
+void PlayerCharacter::Reset()
+{
+	m_IsShooting = false;
 }
 
 void PlayerCharacter::MoveVertical(float value)

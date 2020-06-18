@@ -14,6 +14,7 @@ namespace dae
 		virtual void RootAwake() = 0;
 		virtual void RootStart() = 0;
 		virtual void RootLateUpdate() = 0;
+		bool m_ToBeDestroyed{};
 	};
 }
 
