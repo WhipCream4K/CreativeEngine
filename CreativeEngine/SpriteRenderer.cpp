@@ -30,5 +30,5 @@ void dae::SpriteRenderer::Render() const
 	const auto& gameObjTransform{ GetGameObject()->GetTransform() };
 	const RenderTransform transform{ gameObjTransform };
 	const TextureInfo textureInfo{ m_pSprite.lock()->GetTextureRect(),m_PivotPoint,m_FlipX,m_FlipY };
-	Renderer::AssignRenderQueue(m_pSprite, textureInfo,transform, gameObjTransform.GetPosition().z);
+	Renderer::AssignRenderQueue(m_pSprite, textureInfo,transform, gameObjTransform->GetPosition().z);
 }

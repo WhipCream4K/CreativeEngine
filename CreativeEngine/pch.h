@@ -10,6 +10,7 @@
 #include "SDLFontData.h"
 #include "ResourceManager.h"
 #include "Scene.h"
+#include "Transform.h"
 #include "CreativeTypeName.h"
 
 

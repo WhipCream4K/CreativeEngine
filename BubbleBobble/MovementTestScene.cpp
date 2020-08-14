@@ -10,7 +10,7 @@ MovementTestScene::MovementTestScene()
 void MovementTestScene::SceneInitialize()
 {
 	const auto playerCharacter{ CreateGameObject<PlayerCharacter>() };
-	playerCharacter->GetTransform().SetScale(15.0f, 15.0f);
+	playerCharacter->GetTransform()->SetScale(15.0f, 15.0f);
 }
 
 void MovementTestScene::SetUpInputMappingGroup()

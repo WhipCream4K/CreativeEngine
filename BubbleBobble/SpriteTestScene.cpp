@@ -37,7 +37,7 @@ void SpriteTestScene::SceneInitialize()
 	m_pTextObjs.emplace_back(transparentText);
 
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
-	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
+	daeLogo->GetTransform()->SetScale(1.5f, 1.5f);
 	auto spriteRenderer{ daeLogo->CreateComponent<SpriteRenderer>() };
 	spriteRenderer->SetSprite(daeLogoSprite,true);
 
@@ -46,12 +46,12 @@ void SpriteTestScene::SceneInitialize()
 	spriteRenderer->SetSprite(debugRotation,true);
 
 	const auto& backGroundObject = CreateGameObject<GameObject>(glm::fvec3{ 0.0f,0.0f,30.0f });
-	backGroundObject->GetTransform().SetScale(2.5f, 2.5f);
+	backGroundObject->GetTransform()->SetScale(2.5f, 2.5f);
 	spriteRenderer = backGroundObject->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(background,true);
 	
 	const auto& player = CreateGameObject<PlayerCharacter>({ 0.0f,-130.0f,2.0f });
-	player->GetTransform().SetScale(15.0f, 15.0f);
+	player->GetTransform()->SetScale(15.0f, 15.0f);
 
 	m_pDAELogo = debugRuler;
 
@@ -86,7 +86,7 @@ void SpriteTestScene::Update()
 	if (m_SpriteRotation >= 360.0f)
 		m_SpriteRotation = 0.0f;
 
-	m_pDAELogo->GetTransform().SetRotation(0.0f, 0.0f, m_SpriteRotation);
+	m_pDAELogo->GetTransform()->SetRotation(0.0f, 0.0f, m_SpriteRotation);
 }
 
 void SpriteTestScene::Render() const

@@ -8,6 +8,7 @@
 #include "AudioClip.h"
 #include "TextRenderer.h"
 
+
 AudioTestScene::AudioTestScene()
 	: Scene("AudioTestScene")
 	, m_AudioPlayer{}
@@ -27,7 +28,7 @@ void AudioTestScene::SceneInitialize()
 	const auto& gotcha{ ResourceManager::Load<AudioClip>("./Resources/Sound/Gotcha.mp3","RickRoll") };
 
 	const auto& daeLogo = CreateGameObject<GameObject>(glm::fvec3{ -300.0f,-300.0f,1.0f });
-	daeLogo->GetTransform().SetScale(1.5f, 1.5f);
+	daeLogo->GetTransform()->SetScale(1.5f, 1.5f);
 	auto spriteRenderer{ daeLogo->CreateComponent<SpriteRenderer>() };
 	spriteRenderer->SetSprite(daeLogoSprite,true);
 

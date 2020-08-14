@@ -101,7 +101,7 @@ void PlayerCharacter::SetUpInputComponent()
 
 void PlayerCharacter::JumpTest()
 {
-	GetScene()->Instantiate<Bubble>(GetTransform().GetPosition(),{},{4.0f,4.0f});
+	GetScene()->Instantiate<Bubble>(GetTransform()->GetPosition(),{},{4.0f,4.0f});
 	m_IsShooting = true;
 }
 

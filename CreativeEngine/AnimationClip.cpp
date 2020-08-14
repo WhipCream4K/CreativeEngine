@@ -52,13 +52,13 @@ std::shared_ptr<dae::AnimationClip> dae::AnimationClip::Create(std::weak_ptr<Gam
 	return std::make_shared<AnimationClip>(std::move(pGameObject));
 }
 
-void dae::AnimationClip::AddProperty(std::weak_ptr<SpriteRenderer> spriteRenderer,
+void dae::AnimationClip::AddProperty(std::weak_ptr<SpriteRenderer>&& spriteRenderer,
 	const std::vector<std::shared_ptr<dae::Sprite>>& sprites)
 {
 	AnimTracker tracker{ uint32_t(sprites.size()) };
 	m_ObjectProperties.emplace_back(tracker);
 	auto& temp = m_ObjectProperties.back();
-	const auto changeSprite = [sprites, &temp](std::weak_ptr<SpriteRenderer> renderer)
+	const auto changeSprite = [&sprites, &temp](std::weak_ptr<SpriteRenderer> renderer)
 	{
 		renderer.lock()->SetSprite(sprites[temp.m_CurrentKeyFrame], false);
 	};

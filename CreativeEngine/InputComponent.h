@@ -178,7 +178,6 @@ namespace dae
 	{
 	public:
 
-		void Awake() override;
 
 		// Action mapping
 		template<typename UserClass>
@@ -211,6 +210,9 @@ namespace dae
 	protected:
 
 		void Update() override;
+
+		void Awake() override;
+
 
 	private:
 

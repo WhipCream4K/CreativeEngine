@@ -14,13 +14,13 @@ void BubbleBobble::SceneInitialize()
 {
 	using namespace dae;
 	const auto& player = CreateGameObject<PlayerCharacter>();
-	player->GetTransform().SetScale(4.0f, 4.0f);
+	player->GetTransform()->SetScale(4.0f, 4.0f);
 
 	const auto black{ Sprite::Create("./Resources/Sprite/Black.png","Black") };
 	const auto background = CreateGameObject({0.0f,0.0f,30.0f});
 	auto spriteRenderer = background->CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(black,true);
-	background->GetTransform().SetScale(1600.0f, 900.0f);
+	background->GetTransform()->SetScale(1600.0f, 900.0f);
 
 	const auto levelSprite{ Sprite::Create("./Resources/Sprite/map1.png","Level1") };
 	const auto level{ CreateGameObject({0.0f,0.0f,29.0f}) };
@@ -40,7 +40,6 @@ void BubbleBobble::Update()
 
 void BubbleBobble::Render() const
 {
-	
 }
 
 void BubbleBobble::SetUpInputMappingGroup()

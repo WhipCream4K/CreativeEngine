@@ -14,9 +14,9 @@ void dae::CharacterController::AddMovementInput(const glm::fvec3& direction,floa
 
 void dae::CharacterController::AddWorldMovementInput(const glm::fvec3& direction, float scale, bool frameDependent)
 {
-	auto& transform{ GetTransform() };
+	auto transform{ GetTransform() };
 	float deltaTime = frameDependent ? 1.0f : GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds();
 	m_Velocity = direction * scale * deltaTime * m_MaxSpeed;
-	transform.SetRelativePosition(m_Velocity);
+	transform->SetRelativePosition(m_Velocity);
 }
 

@@ -192,6 +192,9 @@
     <ClCompile Include="Singleton.cpp">
       <Filter>CreativeContext</Filter>
     </ClCompile>
+    <ClCompile Include="BoxCollider2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -340,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="FSMState.h">
       <Filter>CreativeContext</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxCollider2D.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

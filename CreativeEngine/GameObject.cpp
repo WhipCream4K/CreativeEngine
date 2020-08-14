@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "BaseComponent.h"
+#include "Transform.h"
 
 dae::GameObject::GameObject()
-	: m_Transform{}
+	: m_pTransform()
 	, m_Tag{}
 	, m_IsStatic{}
 	, m_IsActive{ true }
@@ -22,7 +24,9 @@ void dae::GameObject::RootRender() const
 
 void dae::GameObject::RootAwake()
 {
-	static_cast<IInternalComponent*>(&m_Transform)->RegisterOwner(weak_from_this());
+	m_pTransform = std::make_shared<Transform>();
+	m_pComponents.emplace_back(m_pTransform);
+	
 	Awake();
 
 	for (const auto& component : m_pComponents)

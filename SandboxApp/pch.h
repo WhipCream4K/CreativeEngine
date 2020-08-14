@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include "EngineUtils.h"
 #include "EngineContext.h"
 #include "GameObject.h"
@@ -9,9 +10,15 @@
 #include "SDLTextureData.h"
 #include "SDLFontData.h"
 #include "ResourceManager.h"
-#include "Transform.h"
 #include "Scene.h"
+#include "Transform.h"
+#include "CreativeTypeName.h"
+#include "SceneManager.h"
+
 
 #include <string>
 #include <memory>
 #include <stdexcept>
+
+//#define ASYNC
+

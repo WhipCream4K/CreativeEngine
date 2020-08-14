@@ -4,20 +4,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libs\SDL2_ttf\lib\x86;$(SolutionDir)Libs\SDL2_image\lib\x86;$(SolutionDir)Libs\SDL2\lib\x86;$(SolutionDir)Libs\vld\lib\Win32;$(SolutionDir)Libs\fmod\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)Libs\glm;$(SolutionDir)Libs\Catch2;$(SolutionDir)Libs\SDL2\include;$(SolutionDir)Libs\SDL2_image\include;$(SolutionDir)Libs\SDL2_ttf\include;$(SolutionDir)Libs\vld\include;$(SolutionDir)Libs\fmod\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Libs\vld\lib\Win64;$(SolutionDir)Libs\SDL2\lib\x64;$(SolutionDir)Libs\SDL2_image\lib\x64;$(SolutionDir)Libs\SDL2_ttf\lib\x64;$(SolutionDir)Libs\fmod\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
     <PostBuildEvent>
       <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"
 xcopy /y /d "$(SolutionDir)Libs\SDL2\lib\x86\SDL2.dll" "$(OutDir)"

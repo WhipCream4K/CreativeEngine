@@ -16,7 +16,10 @@ auto dae::Scene::Destroy(const std::shared_ptr<IInternalGameObject>& ref) noexce
 	for (auto& gameObject : m_pGameObjects)
 	{
 		if (ref == gameObject)
+		{
 			gameObject->m_ToBeDestroyed = true;
+			gameObject->OnDestroy();
+		}
 	}
 }
 
@@ -97,12 +100,12 @@ void dae::Scene::RootInitialize()
 
 void dae::Scene::RootUpdate()
 {
-	AddNewPendingGameObjects();
-	DestroyPendingGameObject();
-	
 	m_Context.pGameTime->Update();
 	m_Context.pInputManager->ReadInputs();
 
+	// 1. User Update as in update what user want to do
+	// 2. Physics Object Update
+	
 	Update();
 
 	for (const auto& gameObject : m_pGameObjects)
@@ -114,6 +117,9 @@ void dae::Scene::RootUpdate()
 	{
 		gameObject->RootLateUpdate();
 	}
+
+	AddNewPendingGameObjects();
+	DestroyPendingGameObject();
 }
 
 void dae::Scene::DestroyPendingGameObject()

@@ -118,6 +118,7 @@ namespace dae
 	{
 		RenderTransform() = default;
 		RenderTransform(const Transform& objTransform);
+		RenderTransform(std::weak_ptr<Transform>&& objTransform);
 
 		glm::fvec2 position;
 		glm::fvec2 scale;

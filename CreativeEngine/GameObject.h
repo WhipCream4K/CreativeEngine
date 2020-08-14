@@ -2,12 +2,16 @@
 
 //#include "CreativeTypeName.h"
 #include "IInternalGameObject.h"
-#include "Transform.h"
+#include "CreativeTypeName.h"
 
 namespace dae
 {
 	class Scene;
 	class BaseComponent;
+	class Transform;
+	class IInternalComponent;
+	class Collider;
+
 	class GameObject : public IInternalGameObject, public std::enable_shared_from_this<GameObject>
 	{
 	public:
@@ -19,7 +23,7 @@ namespace dae
 		GameObject& operator=(const GameObject&) = delete;
 		GameObject& operator=(GameObject&&) = delete;
 
-		void SetActive(bool value) { m_IsActive = value; }
+		constexpr auto SetActive(bool value) noexcept ->void { m_IsActive = value; }
 
 		template<typename T = GameObject, typename U = Scene>
 		static constexpr std::shared_ptr<GameObjectType<T>> Create(std::weak_ptr<SceneType<U>> pScene);
@@ -39,10 +43,11 @@ namespace dae
 		template<typename T>
 		constexpr auto GetShared() const noexcept ->std::shared_ptr<GameObjectType<const T>>;
 
-		std::shared_ptr<Scene> GetScene() const { return m_pRefScene.lock(); }
+		auto GetScene() const noexcept -> std::shared_ptr<Scene> { return m_pRefScene.lock(); }
 
-		constexpr auto GetTransform() -> Transform& { return m_Transform; }
-		
+		auto GetTransform() const noexcept -> std::shared_ptr<Transform> { return m_pTransform.lock(); }
+
+
 
 	protected:
 
@@ -54,14 +59,17 @@ namespace dae
 		virtual void Update() {}
 		virtual void LateUpdate() {}
 
+		virtual void OnDestroy() override {}
+		virtual void OnBeginOverlap(std::shared_ptr<Collider>&&) {}
+
 		void RegisterOwner(std::weak_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
 		//void RegisterOwner(std::shared_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
-		
+
 	private:
 
-		Transform m_Transform;
 		std::vector<std::shared_ptr<IInternalComponent>> m_pComponents;
 		std::weak_ptr<Scene> m_pRefScene;
+		std::weak_ptr<Transform> m_pTransform;
 		std::string m_Tag;
 		bool m_IsStatic;
 		bool m_IsActive;
@@ -112,14 +120,12 @@ namespace dae
 	template <typename T>
 	constexpr auto GameObject::GetShared() noexcept -> std::shared_ptr<GameObjectType<T>>
 	{
-		//std::shared_ptr<GameObject> temp{ std::shared_ptr<GameObject>(shared_from_this()) };
 		return std::static_pointer_cast<T>(shared_from_this());
 	}
 
 	template <typename T>
 	constexpr auto GameObject::GetShared() const noexcept -> std::shared_ptr<GameObjectType<const T>>
 	{
-		//std::shared_ptr<const GameObject> temp{ std::shared_ptr<const GameObject>(shared_from_this()) };
 		return std::static_pointer_cast<const T>(shared_from_this());
 	}
 }

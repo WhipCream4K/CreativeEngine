@@ -13,7 +13,7 @@ namespace dae
 	public:
 		Scene(const std::string& sceneName);
 
-		virtual ~Scene() = default;
+		virtual ~Scene() override = default;
 		Scene(const Scene&) = delete;
 		Scene(Scene&&) noexcept = delete;
 		Scene& operator=(const Scene&) = delete;
@@ -28,12 +28,14 @@ namespace dae
 		constexpr std::shared_ptr<GameObjectType<T>> Instantiate(const glm::fvec3& position = glm::fvec3{ 0.0f,0.0f,0.0f },
 			const glm::fvec3& rotation = { 0.0f,0.0f,0.0f }, const glm::fvec2& scale = { 1.0f,1.0f });
 
-		// TODO: Do GameObject Instantiation (Create GameObject During Runtime)
 
 		const SceneContext& GetSceneContext() const { return m_Context; }
 
 		template<typename UserScene>
-		constexpr auto GetShared() noexcept->std::shared_ptr<SceneType<UserScene>>;
+		constexpr auto GetShared() noexcept ->std::shared_ptr<SceneType<UserScene>>;
+
+		template<typename UserScene>
+		constexpr auto GetShared() const noexcept -> std::shared_ptr<const SceneType<UserScene>>;
 
 		auto Destroy(const std::shared_ptr<IInternalGameObject>& ref) noexcept -> void;
 
@@ -67,10 +69,11 @@ namespace dae
 		const auto gameObject{ std::make_shared<T>() };
 		m_pGameObjects.emplace_back(gameObject);
 		std::static_pointer_cast<IInternalGameObject>(gameObject)->RegisterOwner(GetShared<Scene>());
-		Transform& transform{ gameObject->GetTransform() };
-		transform.SetPosition(position);
-		transform.SetRotation(rotation);
-		transform.SetScale(scale);
+
+		auto transform = gameObject->GetTransform();
+		transform->SetPosition(position);
+		transform->SetRotation(rotation);
+		transform->SetScale(scale);
 		return gameObject;
 	}
 
@@ -83,14 +86,14 @@ namespace dae
 		const auto temp = std::static_pointer_cast<IInternalGameObject>(gameObject);
 		temp->RegisterOwner(GetShared<Scene>());
 		
-		Transform& transform{ gameObject->GetTransform() };
-		transform.SetPosition(position);
-		transform.SetRotation(rotation);
-		transform.SetScale(scale);
-		
 		// really bad
 		temp->RootAwake();
 		temp->RootStart();
+
+		auto transform{ gameObject->GetTransform() };
+		transform->SetPosition(position);
+		transform->SetRotation(rotation);
+		transform->SetScale(scale);
 		
 		return gameObject;
 	}
@@ -99,6 +102,12 @@ namespace dae
 	constexpr auto Scene::GetShared() noexcept -> std::shared_ptr<SceneType<UserScene>>
 	{
 		return std::static_pointer_cast<UserScene>(shared_from_this());
+	}
+
+	template <typename UserScene>
+	constexpr auto Scene::GetShared() const noexcept -> std::shared_ptr<const SceneType<UserScene>>
+	{
+		return std::static_pointer_cast<const UserScene>(shared_from_this());
 	}
 }
 

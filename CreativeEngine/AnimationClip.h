@@ -35,6 +35,7 @@ namespace dae
 			, m_CurrentKeyFrame{}
 			, m_Interval{}
 			, m_Timer{}
+			, m_IsFinished()
 		{
 		}
 
@@ -58,7 +59,7 @@ namespace dae
 		static std::shared_ptr<AnimationClip> Create(std::weak_ptr<GameObject> pGameObject);
 
 		// Only supports SpriteRenderer for now
-		void AddProperty(std::weak_ptr<SpriteRenderer> component, const std::vector<std::shared_ptr<Sprite>>& sprites);
+		void AddProperty(std::weak_ptr<SpriteRenderer>&& component, const std::vector<std::shared_ptr<Sprite>>& sprites);
 
 		// The amount of sample it takes in one second
 		void SetSampleRate(uint32_t amount) { m_SampleRate = amount; }
@@ -67,8 +68,10 @@ namespace dae
 		bool Update();
 
 		void AddTransition(const AnimTransition& transition);
+		//void AddTransition(const std::vector<std::string>& params, std::weak_ptr<AnimationClip>&& pPointToClip);
+		//void AddBlankTransition(std::weak_ptr<AnimationClip>&& pPointToClip);
 
-		const std::vector<AnimTransition>& GetTransitions() const { return m_Transitions; }
+		std::vector<AnimTransition>& GetTransitions() { return m_Transitions; }
 
 		bool IsFinishedPlaying();
 
@@ -78,6 +81,7 @@ namespace dae
 		std::vector<AnimTracker> m_ObjectProperties;
 		std::vector<AnimTransition> m_Transitions;
 		uint32_t m_SampleRate;
+		
 	};
 }
 
