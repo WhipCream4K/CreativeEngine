@@ -16,8 +16,8 @@ namespace dae
 	struct Window
 	{
 		Window() :
-			width{ 1600 },
-			height{ 900 },
+			width{ 1280 },
+			height{ 720 },
 			title{ "Creative Engine by Patipan Poungjun 2DAE02" },
 			aspectRatio{ float(width) / height }
 		{

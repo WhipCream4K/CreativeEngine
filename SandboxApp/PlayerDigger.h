@@ -1,6 +1,11 @@
 #pragma once
 #include <GameObject.h>
 
+namespace dae
+{
+	class SpriteRenderer;
+}
+
 class PlayerDigger :
     public dae::GameObject
 {
@@ -8,6 +13,7 @@ public:
 	PlayerDigger();
 protected:
 	void Awake() override;
+	
 private:
 
 	// Normal Digger
@@ -22,7 +28,10 @@ private:
 
 	// Dead Sprite
 	std::vector<std::shared_ptr<dae::Sprite>> m_pDeadSprite;
-	
+
+	std::weak_ptr<dae::SpriteRenderer> m_pSpriteRenderer;
 	bool m_IsShellEmpty;
+
+	void MoveHorizontal(float value);
 };
 

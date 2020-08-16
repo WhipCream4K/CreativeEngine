@@ -9,11 +9,6 @@ void dae::Animator::Awake()
 	defaultVal.isATrigger = false;
 	defaultVal.condition = true;
 	defaultVal.name = "";
-	
-	for (const auto& clip : m_Clips)
-	{
-		clip;
-	}
 }
 
 void dae::Animator::Update()
@@ -46,14 +41,16 @@ void dae::Animator::Update()
 
 			if (m_CurrentClip.lock()->Update())
 			{
-				// reset
-				auto& conditionValues = triggeredTransition->GetTransitionConditions();
-				for (const auto& value : conditionValues)
+				if(transitionTriggered)
 				{
-					std::string str{ value.first };
-					auto& param = m_pAnimParams.at(str);
-					if (param.isATrigger)
-						param.condition = false;
+					auto& conditionValues = triggeredTransition->GetTransitionConditions();
+					for (const auto& value : conditionValues)
+					{
+						std::string str{ value.first };
+						auto& param = m_pAnimParams.at(str);
+						if (param.isATrigger)
+							param.condition = false;
+					}
 				}
 				m_CurrentClip = m_Default;
 			}
@@ -61,63 +58,60 @@ void dae::Animator::Update()
 	}
 }
 
-void dae::Animator::AddTransition(const std::shared_ptr<AnimationClip>& left, const std::string& name,
-	const std::shared_ptr<AnimationClip>& right, bool isTrigger)
+void dae::Animator::AddTransition(const std::shared_ptr<AnimationClip>& from, const std::string& name,
+	const std::shared_ptr<AnimationClip>& to, bool isTrigger)
 {
-	bool isContainsA{}, isContainsB{};
+	bool isContainsFrom{}, isContainsTo{};
 	for (const auto& clip : m_Clips)
 	{
-		isContainsA = (clip == left);
-		isContainsB = (clip == right);
+		if(isContainsFrom && isContainsTo)
+			break;
+		
+		if (!isContainsFrom)
+			isContainsFrom = (clip == from);
+		if (!isContainsTo)
+			isContainsTo = (clip == to);
 	}
 
-	if (!isContainsA)
-		m_Clips.emplace_back(left);
-	if (!isContainsB)
-		m_Clips.emplace_back(right);
+	if (!isContainsFrom)
+		m_Clips.emplace_back(from);
+	if (!isContainsTo)
+		m_Clips.emplace_back(to);
 
-	auto it = m_pAnimParams.find(name);
-	if (it != m_pAnimParams.end())
-	{
-		// Create Only Transition for left and right
-		AnimTransition transition{ right };
-		auto& value = m_pAnimParams.at(name);
-		transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
-		left->AddTransition(transition);
+	// Create new params and transition for from and to
+	AnimParams params{ name,isTrigger,false };
+	m_pAnimParams.try_emplace(name, params);
 
-	}
-	else
-	{
-		// Create new params and transition for left and right
-		AnimParams params{ name,isTrigger,false };
-		m_pAnimParams.try_emplace(name, params);
-
-		AnimTransition transition{ right };
-		auto& value = m_pAnimParams.at(name);
-		transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
-		left->AddTransition(transition);
-	}
+	AnimTransition transition{ to };
+	auto& value = m_pAnimParams.at(name);
+	transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
+	from->AddTransition(transition);
 }
 
-void dae::Animator::AddBlankTransition(const std::shared_ptr<AnimationClip>& left,
-	const std::shared_ptr<AnimationClip>& right)
+void dae::Animator::AddBlankTransition(const std::shared_ptr<AnimationClip>& from,
+	const std::shared_ptr<AnimationClip>& to)
 {
-	bool isContainsA{}, isContainsB{};
+	bool isContainsFrom{}, isContainsTo{};
 	for (const auto& clip : m_Clips)
 	{
-		isContainsA = (clip == left);
-		isContainsB = (clip == right);
+		if (isContainsFrom && isContainsTo)
+			break;
+
+		if (!isContainsFrom)
+			isContainsFrom = (clip == from);
+		if (!isContainsTo)
+			isContainsTo = (clip == to);
 	}
 
-	if (!isContainsA)
-		m_Clips.emplace_back(left);
-	if (!isContainsB)
-		m_Clips.emplace_back(right);
+	if (!isContainsFrom)
+		m_Clips.emplace_back(from);
+	if (!isContainsTo)
+		m_Clips.emplace_back(to);
 
-	AnimTransition transition{ right };
+	AnimTransition transition{ to };
 	auto& value = m_pAnimParams.at("");
 	transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
-	left->AddTransition(transition);
+	from->AddTransition(transition);
 }
 
 void dae::Animator::AddAnimationClip(std::shared_ptr<AnimationClip> clip)
@@ -129,11 +123,14 @@ void dae::Animator::AddAnimationClip(std::shared_ptr<AnimationClip> clip)
 
 void dae::Animator::SetTrigger(const std::string& paramName)
 {
-	paramName;
+	auto& value = m_pAnimParams.at(paramName);
+	if (value.isATrigger)
+		value.condition = true;
 }
 
 void dae::Animator::SetBool(const std::string& paramName, bool state)
 {
-	paramName;
-	state;
+	auto& value = m_pAnimParams.at(paramName);
+	if (!value.isATrigger)
+		value.condition = state;
 }

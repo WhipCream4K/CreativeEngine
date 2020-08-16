@@ -74,6 +74,7 @@ namespace dae
 		transform->SetPosition(position);
 		transform->SetRotation(rotation);
 		transform->SetScale(scale);
+		
 		return gameObject;
 	}
 

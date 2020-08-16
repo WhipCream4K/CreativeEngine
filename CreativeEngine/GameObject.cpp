@@ -10,6 +10,9 @@ dae::GameObject::GameObject()
 	, m_IsActive{ true }
 	, m_IsInit{}
 {
+	auto transform = std::make_shared<Transform>();
+	m_pComponents.emplace_back(transform);
+	m_pTransform = transform;
 }
 
 void dae::GameObject::RootRender() const
@@ -23,10 +26,7 @@ void dae::GameObject::RootRender() const
 }
 
 void dae::GameObject::RootAwake()
-{
-	m_pTransform = std::make_shared<Transform>();
-	m_pComponents.emplace_back(m_pTransform);
-	
+{	
 	Awake();
 
 	for (const auto& component : m_pComponents)

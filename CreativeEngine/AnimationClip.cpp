@@ -30,10 +30,10 @@ void dae::AnimTracker::Update(float deltaTime, uint32_t sampleRate)
 		m_IsFinished = false;
 		m_Interval = 0.0f;
 		m_CurrentKeyFrame = Clamp(++m_CurrentKeyFrame, 0U, m_KeyFrameAmount - 1);
-
-		// Call function
-		m_AnimFunc->Invoke();
 	}
+	
+	// Call function
+	m_AnimFunc->Invoke();
 }
 
 void dae::AnimTracker::SetExecuteFunction(ActionFunc func)

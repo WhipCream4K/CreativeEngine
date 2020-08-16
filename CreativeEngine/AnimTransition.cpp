@@ -26,7 +26,7 @@ dae::AnimTransition::AnimTransition(std::vector<ConditionFunc>&& conditions, std
 
 bool dae::AnimTransition::IsTriggered() const
 {
-	return std::all_of(m_States.begin(), m_States.end(), [](const auto& state) { return state->second; });
+	return std::all_of(m_States.begin(), m_States.end(), [](const auto& state) { return *state.second == true; });
 }
 
 

@@ -20,10 +20,10 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"
-xcopy /y /d "$(SolutionDir)Libs\SDL2\lib\x86\SDL2.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)Libs\SDL2_image\lib\x86\*.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x86\*.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x86\*.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(SolutionDir)Libs\SDL2\lib\x64\SDL2.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Libs\SDL2_image\lib\x64\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Libs\SDL2_ttf\lib\x64\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup />

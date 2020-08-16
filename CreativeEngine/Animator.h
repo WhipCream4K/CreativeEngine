@@ -15,8 +15,8 @@ namespace dae
 			bool condition{};
 		};
 
-		void AddTransition(const std::shared_ptr<AnimationClip>& left,const std::string& name, const std::shared_ptr<AnimationClip>& right,bool isTrigger);
-		void AddBlankTransition(const std::shared_ptr<AnimationClip>& left, const std::shared_ptr<AnimationClip>& right);
+		void AddTransition(const std::shared_ptr<AnimationClip>& from,const std::string& name, const std::shared_ptr<AnimationClip>& to,bool isTrigger);
+		void AddBlankTransition(const std::shared_ptr<AnimationClip>& from, const std::shared_ptr<AnimationClip>& to);
 		void AddAnimationClip(std::shared_ptr<AnimationClip> clip);
 		void SetDefaultAnimClip(std::weak_ptr<AnimationClip>&& clip) { m_Default = std::move(clip); }
 		void SetTrigger(const std::string& paramName);
