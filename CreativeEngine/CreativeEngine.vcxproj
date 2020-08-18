@@ -238,6 +238,8 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PhysicsComponent.cpp" />
+    <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderInfo.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -290,6 +292,8 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="ITextureEntity.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PhysicsComponent.h" />
+    <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderInfo.h" />
     <ClInclude Include="ResourceManager.h" />

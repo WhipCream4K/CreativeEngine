@@ -37,10 +37,10 @@ namespace dae
 
 		void Render() const override {}
 
-		void Awake() override {}
+		void Awake() override {};
 		void Start() override {}
 
-		void Update() override {}
+		void Update() override {};
 		void LateUpdate() override {}
 
 		void RegisterOwner(std::weak_ptr<GameObject>&& pOwner) override final { m_pGameObject = std::move(pOwner); }

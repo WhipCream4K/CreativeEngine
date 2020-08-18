@@ -3,6 +3,7 @@
 #include "Sprite.h"
 #include "InputComponent.h"
 #include "Animator.h"
+#include "BoxCollider2D.h"
 
 PlayerDigger::PlayerDigger()
 {
@@ -57,14 +58,29 @@ void PlayerDigger::Awake()
 	// Initialize Controller
 	auto inputComponent = CreateComponent<InputComponent>();
 	inputComponent->BindAxis("Horizontal", GetShared<PlayerDigger>(), &PlayerDigger::MoveHorizontal);
+	inputComponent->BindAxis("Vertical", GetShared<PlayerDigger>(), &PlayerDigger::MoveVertical);
+
+	// Initialize Collider
+	auto collider = CreateComponent<BoxCollider2D>();
+	collider->SetSize({ 32.0f,30.0f });
+	collider->EnableDebugDraw(true);
 }
 
 void PlayerDigger::MoveHorizontal(float value)
 {
 	float deltaSec{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
 	glm::fvec3 worldRight{ 1.0f,0.0f,0.0f };
-	auto vel = value * worldRight * deltaSec * 20.0f;
+	auto vel = value * worldRight * deltaSec * 200.0f;
 	GetTransform()->SetRelativePosition(vel);
 
 	m_pSpriteRenderer.lock()->SetFlipY(value < 1.0f ? true : false);
+}
+
+void PlayerDigger::MoveVertical(float value)
+{
+	float deltaSec{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
+	glm::fvec3 worldUp{ 0.0f,1.0f,0.0f };
+	auto vel = value * worldUp * deltaSec * 200.0f;
+	GetTransform()->SetRelativePosition(vel);
+
 }

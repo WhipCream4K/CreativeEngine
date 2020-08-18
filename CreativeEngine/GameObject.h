@@ -3,6 +3,9 @@
 //#include "CreativeTypeName.h"
 #include "IInternalGameObject.h"
 #include "CreativeTypeName.h"
+#include "Scene.h"
+#include "PhysicsScene.h"
+#include "Collider.h"
 
 namespace dae
 {
@@ -11,6 +14,7 @@ namespace dae
 	class Transform;
 	class IInternalComponent;
 	class Collider;
+	class PhysicsComponent;
 
 	class GameObject : public IInternalGameObject, public std::enable_shared_from_this<GameObject>
 	{
@@ -36,6 +40,9 @@ namespace dae
 
 		template<typename T>
 		constexpr std::shared_ptr<GameComponent<T>> CreateComponent();
+
+		//template<typename T>
+		//constexpr auto CreateComponent() noexcept -> std::shared_ptr<ColliderType<T>>;
 
 		template<typename T>
 		constexpr auto GetShared() noexcept ->std::shared_ptr<GameObjectType<T>>;
@@ -68,6 +75,7 @@ namespace dae
 	private:
 
 		std::vector<std::shared_ptr<IInternalComponent>> m_pComponents;
+		std::vector<std::shared_ptr<PhysicsComponent>> m_pPhysicsComponent;
 		std::weak_ptr<Scene> m_pRefScene;
 		std::weak_ptr<Transform> m_pTransform;
 		std::string m_Tag;
@@ -81,6 +89,8 @@ namespace dae
 		void RootUpdate() override final;
 		void RootLateUpdate() override final;
 		void RootInitialize() override final {}
+
+		void RegisterCollider(const std::shared_ptr<BaseComponent>& component);
 	};
 
 	template <typename T, typename U>
@@ -114,6 +124,14 @@ namespace dae
 		const auto component{ std::make_shared<T>() };
 		m_pComponents.emplace_back(component);
 		std::static_pointer_cast<IInternalComponent>(component)->RegisterOwner(shared_from_this());
+
+		constexpr bool type{ std::is_base_of_v<Collider,T> };
+		if (type)
+			RegisterCollider(component);
+		
+		//if (typeid(T) == typeid(Collider))
+			//GetScene()->GetPhysicsScene()->RegisterCollider(component);
+
 		return component; // return strong ref to this component
 	}
 

@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "InputManager.h"
 #include <future>
+#include "Collider.h"
+#include "PhysicsScene.h"
 
 
 dae::Scene::Scene(const std::string& sceneName)
@@ -31,6 +33,8 @@ void dae::Scene::RootRender() const
 	{
 		gameObject->RootRender();
 	}
+
+	m_pPhysicsScene->Render();
 }
 
 void dae::Scene::RootInitialize()
@@ -40,6 +44,7 @@ void dae::Scene::RootInitialize()
 
 	m_Context.pInputManager = std::make_shared<InputManager>();
 	m_Context.pGameTime = std::make_shared<GameTime>();
+	m_pPhysicsScene = std::make_shared<PhysicsScene>();
 
 	m_Context.pGameTime->Reset();
 	m_Context.pGameTime->Stop();
@@ -107,17 +112,20 @@ void dae::Scene::RootUpdate()
 	// 2. Physics Object Update
 	
 	Update();
-
+	
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootUpdate();
 	}
 
+	m_pPhysicsScene->Update();
+	
+
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootLateUpdate();
 	}
-
+	
 	AddNewPendingGameObjects();
 	DestroyPendingGameObject();
 }

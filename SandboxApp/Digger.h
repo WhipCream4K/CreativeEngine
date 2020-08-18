@@ -31,6 +31,9 @@ private:
 	std::vector<std::shared_ptr<dae::Sprite>> m_pMoneyBagSprite;
 	std::shared_ptr<dae::Sprite> m_pJewelSprite;
 	std::shared_ptr<dae::Sprite> m_pCherrySprite;
+
+	static const uint32_t m_CellCount;
+
 	char* m_pCellSemantics;
 };
 

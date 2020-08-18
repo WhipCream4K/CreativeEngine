@@ -33,5 +33,6 @@ private:
 	bool m_IsShellEmpty;
 
 	void MoveHorizontal(float value);
+	void MoveVertical(float value);
 };
 

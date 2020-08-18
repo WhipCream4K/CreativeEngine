@@ -195,6 +195,12 @@
     <ClCompile Include="BoxCollider2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -345,6 +351,12 @@
       <Filter>CreativeContext</Filter>
     </ClInclude>
     <ClInclude Include="BoxCollider2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

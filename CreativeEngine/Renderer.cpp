@@ -12,7 +12,7 @@ void dae::Renderer::RenderImpl()
 
 	std::sort(m_RenderTexture.begin(), m_RenderTexture.end(), [](const RenderTexture& left, const RenderTexture& right)
 		{
-			return left.depth > right.depth;
+			return left.depth < right.depth;
 		});
 
 	for (const auto& texture : m_RenderTexture)

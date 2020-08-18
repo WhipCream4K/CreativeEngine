@@ -2,11 +2,13 @@
 
 #include "CreativeTypeName.h"
 #include "CreativeStructs.h"
+//#include "Collider.h"
 
 #define SCENE_COMPONENT
 
 namespace dae
 {
+	class PhysicsScene;
 	class SceneManager;
 	class Scene : public IInternalSceneObject, public std::enable_shared_from_this<Scene>
 	{
@@ -31,6 +33,8 @@ namespace dae
 
 		const SceneContext& GetSceneContext() const { return m_Context; }
 
+		std::shared_ptr<PhysicsScene> GetPhysicsScene() const { return m_pPhysicsScene; }
+
 		template<typename UserScene>
 		constexpr auto GetShared() noexcept ->std::shared_ptr<SceneType<UserScene>>;
 
@@ -49,9 +53,12 @@ namespace dae
 	private:
 
 		SceneContext m_Context;
+		std::shared_ptr<PhysicsScene> m_pPhysicsScene;
 		//std::vector<std::shared_ptr<GameObject>> m_pGameObjects;
 		std::vector<std::shared_ptr<IInternalGameObject>> m_pGameObjects;
 		std::vector<std::shared_ptr<IInternalGameObject>> m_pPendingAdd;
+		std::vector<std::weak_ptr<Collider>> m_pColliderObjects;
+
 		std::string m_SceneName;
 		bool m_IsInit;
 
@@ -74,7 +81,7 @@ namespace dae
 		transform->SetPosition(position);
 		transform->SetRotation(rotation);
 		transform->SetScale(scale);
-		
+
 		return gameObject;
 	}
 
@@ -86,7 +93,7 @@ namespace dae
 		m_pPendingAdd.emplace_back(gameObject);
 		const auto temp = std::static_pointer_cast<IInternalGameObject>(gameObject);
 		temp->RegisterOwner(GetShared<Scene>());
-		
+
 		// really bad
 		temp->RootAwake();
 		temp->RootStart();
@@ -95,7 +102,7 @@ namespace dae
 		transform->SetPosition(position);
 		transform->SetRotation(rotation);
 		transform->SetScale(scale);
-		
+
 		return gameObject;
 	}
 

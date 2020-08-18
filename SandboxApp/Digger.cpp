@@ -5,10 +5,13 @@
 #include "ResourceManager.h"
 #include "Sprite.h"
 #include "SpriteRenderer.h"
+#include "BoxCollider2D.h"
 #include <fstream>
 #include <iostream>
 
 //#define BINARY_WRITER
+
+const uint32_t Digger::m_CellCount{ 150 };
 
 Digger::Digger()
 	: Scene("Digger")
@@ -37,12 +40,11 @@ void Digger::SceneInitialize()
 	auto cherry = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Cherry.tga", "Cherry");
 	m_pCherrySprite = Sprite::Create(cherry);
 
-	std::ifstream inStream{ "./Resources/Digger/Level_0.bin", std::ios::in | std::ios::binary | std::ios::ate };
+	std::ifstream inStream{ "./Resources/Digger/Level_0.bin", std::ios::in | std::ios::binary };
 
 
 	glm::fvec3 boundStart{ -750.0f / 2.0f, 440.0f / 2.0f,-2.0f };
 	const glm::fvec3 offset{ 25.0f,-22.0f,0.0f };
-	uint32_t cellCount{};
 
 	std::shared_ptr<GameObject> pSceneObject;
 	std::shared_ptr<SpriteRenderer> pSpriteRenderer;
@@ -51,15 +53,14 @@ void Digger::SceneInitialize()
 	// read in level file
 	if (inStream.is_open())
 	{
-		cellCount = uint32_t(inStream.tellg());
-		m_pCellSemantics = new char[cellCount];
+		m_pCellSemantics = new char[m_CellCount];
 		inStream.seekg(0);
-		inStream.read(m_pCellSemantics, cellCount);
+		inStream.read(m_pCellSemantics, m_CellCount);
 	}
 
 	inStream.close();
 
-	for (uint32_t i = 0; i < cellCount; ++i)
+	for (uint32_t i = 0; i < m_CellCount; ++i)
 	{
 		BlockId semantics{ BlockId(m_pCellSemantics[i]) };
 
@@ -135,6 +136,29 @@ void Digger::SceneInitialize()
 
 	auto player = CreateGameObject<PlayerDigger>();
 	player->GetTransform()->SetScale(1.5f, 1.5f);
+
+	glm::fvec3 position{-200.0f,100.0f,0.0f};
+	for (int i = 0; i < 150; ++i)
+	{
+		if (i % 10 == 0 && i != 0)
+		{
+			position.y -= 60.0f;
+			position.x = -200.0f;
+		}
+		auto collisionTest = CreateGameObject(position);
+		auto collider = collisionTest->CreateComponent<BoxCollider2D>();
+		collider->SetSize({ 50.0f,50.0f });
+
+		position.x += 60.0f;
+	}
+	
+	//auto collisionTest = CreateGameObject({ -150.0f,0.0f,0.0f });
+	//auto collider = collisionTest->CreateComponent<BoxCollider2D>();
+	//collider->SetSize({ 50.0f,50.0f });
+
+	//collisionTest = CreateGameObject({ 150.0f,0.0f,0.0f });
+	//collider = collisionTest->CreateComponent<BoxCollider2D>();
+	//collider->SetSize({ 50.0f,50.0f });
 }
 
 void Digger::SetUpInputMappingGroup()
@@ -143,6 +167,9 @@ void Digger::SetUpInputMappingGroup()
 	auto& horizontalGroup = GetSceneContext().pInputManager->AddInputAxisGroup("Horizontal");
 	horizontalGroup.AddKey(Key(Device::D_Keyboard, SDLK_LEFT), -1.0f);
 	horizontalGroup.AddKey(Key(Device::D_Keyboard, SDLK_RIGHT), 1.0f);
+	auto& verticalGroup = GetSceneContext().pInputManager->AddInputAxisGroup("Vertical");
+	verticalGroup.AddKey(Key(Device::D_Keyboard, SDLK_UP), 1.0f);
+	verticalGroup.AddKey(Key(Device::D_Keyboard, SDLK_DOWN), -1.0f);
 }
 
 void Digger::Update()
