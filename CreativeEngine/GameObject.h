@@ -54,6 +54,7 @@ namespace dae
 
 		auto GetTransform() const noexcept -> std::shared_ptr<Transform> { return m_pTransform.lock(); }
 
+		virtual void OnBeginOverlap(const std::vector<std::weak_ptr<Collider>>&) {}
 
 
 	protected:
@@ -67,7 +68,6 @@ namespace dae
 		virtual void LateUpdate() {}
 
 		virtual void OnDestroy() override {}
-		virtual void OnBeginOverlap(std::shared_ptr<Collider>&&) {}
 
 		void RegisterOwner(std::weak_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
 		//void RegisterOwner(std::shared_ptr<Scene>&& pScene) override final { m_pRefScene = std::move(pScene); }
@@ -111,8 +111,8 @@ namespace dae
 		const auto& type = typeid(T);
 		for (auto& component : m_pComponents)
 		{
-			if (typeid(component) == type)
-				return std::static_pointer_cast<T, BaseComponent>(component);
+			if (typeid(*component) == type)
+				return std::static_pointer_cast<T>(component);
 		}
 
 		return nullptr;

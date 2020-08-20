@@ -43,6 +43,10 @@ namespace dae
 
 		auto Destroy(const std::shared_ptr<IInternalGameObject>& ref) noexcept -> void;
 
+		// Return the first reference of the define GameObject
+		template<typename T>
+		constexpr auto GetGameObjectOfType() const noexcept -> std::shared_ptr<GameObjectType<T>>;
+		
 	protected:
 
 		virtual void SceneInitialize() = 0;
@@ -116,6 +120,19 @@ namespace dae
 	constexpr auto Scene::GetShared() const noexcept -> std::shared_ptr<const SceneType<UserScene>>
 	{
 		return std::static_pointer_cast<const UserScene>(shared_from_this());
+	}
+
+	template <typename T>
+	constexpr auto Scene::GetGameObjectOfType() const noexcept -> std::shared_ptr<GameObjectType<T>>
+	{
+		const auto& type = typeid(T);
+		for (const auto& gameObject : m_pGameObjects)
+		{
+			if (gameObject && type == typeid(*gameObject))
+				return std::static_pointer_cast<T>(gameObject);
+		}
+
+		return nullptr;
 	}
 }
 

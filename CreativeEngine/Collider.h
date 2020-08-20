@@ -15,9 +15,11 @@ namespace dae
 		constexpr auto IsTriggered() const noexcept -> bool { return m_IsTriggered; }
 		constexpr auto SetIsTrigger(bool state) noexcept -> void { m_IsATrigger = state; }
 		void AddCaches(std::weak_ptr<Collider>&& collider);
-		void ClearCaches() { m_pCaches.clear(); }
+		void ClearCaches();
 		const glm::fvec2& GetScale() const { return *m_ObjScale; }
-		virtual void Resolve(const std::vector<std::weak_ptr<Collider>>& colliders) = 0;
+		void OnBeginOverlap();
+		//virtual void Resolve(const std::vector<std::weak_ptr<Collider>>& colliders) = 0;
+		virtual void Resolve(std::vector<std::weak_ptr<Collider>> colliders) = 0;
 		virtual void Resolve(const std::shared_ptr<Collider>& collider) = 0;
 		//virtual void Resolve(std::weak_ptr<Collider>&& collider) = 0;
 		

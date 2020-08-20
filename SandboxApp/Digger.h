@@ -17,6 +17,15 @@ public:
 		Jewel,
 	};
 
+	enum class PathDirection
+	{
+		None,
+		Right,
+		Left,
+		Up,
+		Down
+	};
+
 	~Digger();
 	
 protected:
@@ -28,8 +37,8 @@ protected:
 private:
 	
 	std::unordered_map<uint32_t, std::shared_ptr<dae::Sprite>> m_pBigSprites;
-	std::vector<std::shared_ptr<dae::Sprite>> m_pMoneyBagSprite;
-	std::shared_ptr<dae::Sprite> m_pJewelSprite;
+	std::unordered_map<PathDirection, std::shared_ptr<dae::Sprite>> m_pWalkSprites;
+	std::shared_ptr<dae::Sprite> m_pBackgroundSprite;
 	std::shared_ptr<dae::Sprite> m_pCherrySprite;
 
 	static const uint32_t m_CellCount;

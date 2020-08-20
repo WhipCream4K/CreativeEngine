@@ -5,7 +5,8 @@
 #include "ResourceManager.h"
 #include "Sprite.h"
 #include "SpriteRenderer.h"
-#include "BoxCollider2D.h"
+#include "Gold.h"
+#include "Jewel.h"
 #include <fstream>
 #include <iostream>
 
@@ -32,19 +33,60 @@ void Digger::SceneInitialize()
 {
 	using namespace dae;
 
-	auto moneyBag = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/MoneyBag.tga", "MoneyBag");
-	m_pMoneyBagSprite = Sprite::CreateSpriteSheet(moneyBag, {}, { 32.0f,30.0f }, 4, 0.0f);
-	auto jewel = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Jewel.tga", "Jewel");
-	m_pJewelSprite = Sprite::Create(jewel);
+	// Background -> Layer -2
+	// PickUps -> Layer -1
+	// Dynamic -> Layer 0
 
 	auto cherry = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Cherry.tga", "Cherry");
+	// Initialize Dark sky
+	{
+		auto blackPixel = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Black.png", "Black");
+		m_pBackgroundSprite = Sprite::Create(blackPixel);
+		auto backGround = CreateGameObject({0.0f,0.0f,-3.0f}, {}, { 1280.0f,720.0f });
+		auto backgroundRenderer = backGround->CreateComponent<SpriteRenderer>();
+		backgroundRenderer->SetSprite(m_pBackgroundSprite,true);
+	}
+
+	// Initialize background
+	{
+		auto level0background = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Level_0_BG.tga", "Level_0_BG");
+		auto backgroundSprite = Sprite::Create(level0background);
+		m_pBigSprites.try_emplace(0u, backgroundSprite);
+		auto background = CreateGameObject({0.0f,0.0f,-2.0f});
+		background->GetTransform()->SetScale(1.8f, 1.8f);
+		auto renderer = background->CreateComponent<SpriteRenderer>();
+		renderer->SetSprite(backgroundSprite,true);
+	}
+
+	// Initialize walk path
+	{
+		std::string walkDir{};
+		for (int i = 0; i < 5; ++i)
+		{
+			switch (PathDirection(i))
+			{
+			case PathDirection::None:	walkDir = "Normal";	break;
+			case PathDirection::Right:	walkDir = "Right";	break;
+			case PathDirection::Left:	walkDir = "Left";	break;
+			case PathDirection::Up:		walkDir = "Up";		break;
+			case PathDirection::Down:	walkDir = "Down";	break;
+			}
+
+			auto texture = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/WalkPath/WalkPath_" + walkDir + ".tga", "WalkPath_" + walkDir);
+			auto sprites = Sprite::Create(texture);
+			m_pWalkSprites.try_emplace(PathDirection(i), sprites);
+		}
+	}
+	
 	m_pCherrySprite = Sprite::Create(cherry);
 
 	std::ifstream inStream{ "./Resources/Digger/Level_0.bin", std::ios::in | std::ios::binary };
 
 
-	glm::fvec3 boundStart{ -750.0f / 2.0f, 440.0f / 2.0f,-2.0f };
-	const glm::fvec3 offset{ 25.0f,-22.0f,0.0f };
+	const glm::fvec2 maxBound{ 480.0f,300.0f };
+	const glm::fvec2 cellSize{ 36.0f,36.0f };
+	glm::fvec3 boundStart{ -480.0f / 2.0f, 300.0f / 2.0f,-1.0f };
+	const glm::fvec3 cellOffSet{ 16.0f,-15.0f,0.0f };
 
 	std::shared_ptr<GameObject> pSceneObject;
 	std::shared_ptr<SpriteRenderer> pSpriteRenderer;
@@ -68,37 +110,26 @@ void Digger::SceneInitialize()
 		{
 		case BlockId::None:
 
-			pSceneObject = CreateGameObject(boundStart + offset);
+			pSceneObject = CreateGameObject(boundStart + cellOffSet);
+			pSceneObject->GetTransform()->SetScale(1.8f, 1.8f);
 			pSpriteRenderer = pSceneObject->CreateComponent<SpriteRenderer>();
-			pSpriteRenderer->SetSprite(m_pCherrySprite, true);
+			pSpriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
 
 			break;
-		case BlockId::Level: break;
-		case BlockId::Gold:
-
-			pSceneObject = CreateGameObject(boundStart + offset);
-			pSpriteRenderer = pSceneObject->CreateComponent<SpriteRenderer>();
-			pSpriteRenderer->SetSprite(m_pMoneyBagSprite[0], true);
-
-			break;
-		case BlockId::Jewel:
-
-			pSceneObject = CreateGameObject(boundStart + offset);
-			pSpriteRenderer = pSceneObject->CreateComponent<SpriteRenderer>();
-			pSpriteRenderer->SetSprite(m_pJewelSprite, true);
-
-			break;
+		case BlockId::Level:															break;
+		case BlockId::Gold:		CreateGameObject<Gold>(boundStart + cellOffSet);		break;
+		case BlockId::Jewel:	CreateGameObject<Jewel>(boundStart + cellOffSet);	break;
 		}
-
+		
 		if (countLineX % 14 == 0 && countLineX != 0)
 		{
 			countLineX = 0;
-			boundStart.x = -375.0f;
-			boundStart.y -= 44.0f;
+			boundStart.x = -maxBound.x / 2.0f;
+			boundStart.y -= cellSize.y;
 		}
 		else
 		{
-			boundStart.x += 50.0f;
+			boundStart.x += cellSize.x;
 			++countLineX;
 		}
 	}
@@ -135,22 +166,25 @@ void Digger::SceneInitialize()
 #endif
 
 	auto player = CreateGameObject<PlayerDigger>();
-	player->GetTransform()->SetScale(1.5f, 1.5f);
+	//player->GetTransform()->SetScale(1.5f, 1.5f);
+	player->GetTransform()->SetPosition(0.0f, -150.0f, 0.0f);
+	player->GetTransform()->SetScale(1.8f, 1.8f);
 
-	glm::fvec3 position{-200.0f,100.0f,0.0f};
-	for (int i = 0; i < 150; ++i)
-	{
-		if (i % 10 == 0 && i != 0)
-		{
-			position.y -= 60.0f;
-			position.x = -200.0f;
-		}
-		auto collisionTest = CreateGameObject(position);
-		auto collider = collisionTest->CreateComponent<BoxCollider2D>();
-		collider->SetSize({ 50.0f,50.0f });
+	
+	//glm::fvec3 position{-200.0f,100.0f,0.0f};
+	//for (int i = 0; i < 150; ++i)
+	//{
+	//	if (i % 10 == 0 && i != 0)
+	//	{
+	//		position.y -= 60.0f;
+	//		position.x = -200.0f;
+	//	}
+	//	auto collisionTest = CreateGameObject(position);
+	//	auto collider = collisionTest->CreateComponent<BoxCollider2D>();
+	//	collider->SetSize({ 50.0f,50.0f });
 
-		position.x += 60.0f;
-	}
+	//	position.x += 60.0f;
+	//}
 	
 	//auto collisionTest = CreateGameObject({ -150.0f,0.0f,0.0f });
 	//auto collider = collisionTest->CreateComponent<BoxCollider2D>();

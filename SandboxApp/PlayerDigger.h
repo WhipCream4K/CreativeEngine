@@ -4,10 +4,10 @@
 namespace dae
 {
 	class SpriteRenderer;
+	class Animator;
 }
 
-class PlayerDigger :
-    public dae::GameObject
+class PlayerDigger : public dae::GameObject
 {
 public:
 	PlayerDigger();
@@ -30,6 +30,7 @@ private:
 	std::vector<std::shared_ptr<dae::Sprite>> m_pDeadSprite;
 
 	std::weak_ptr<dae::SpriteRenderer> m_pSpriteRenderer;
+	std::weak_ptr<dae::Animator> m_pAnimator;
 	bool m_IsShellEmpty;
 
 	void MoveHorizontal(float value);

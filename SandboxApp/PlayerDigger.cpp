@@ -6,6 +6,8 @@
 #include "BoxCollider2D.h"
 
 PlayerDigger::PlayerDigger()
+	: GameObject()
+	, m_IsShellEmpty()
 {
 }
 
@@ -18,12 +20,12 @@ void PlayerDigger::Awake()
 
 	{
 		m_pWalkStraight = Sprite::CreateSpriteSheet(player1Sprite, {}, { 32.0f,30.0f }, 3, 0.0f);
-		m_pWalkUp = Sprite::CreateSpriteSheet(player1Sprite, {0.0f,30.0f}, { 32.0f,30.0f }, 3, 0.0f);
-		m_pWalkDown = Sprite::CreateSpriteSheet(player1Sprite, {0.0f,60.0f}, { 32.0f,30.0f }, 3, 0.0f);
+		m_pWalkUp = Sprite::CreateSpriteSheet(player1Sprite, { 0.0f,30.0f }, { 32.0f,30.0f }, 3, 0.0f);
+		m_pWalkDown = Sprite::CreateSpriteSheet(player1Sprite, { 0.0f,60.0f }, { 32.0f,30.0f }, 3, 0.0f);
 	}
 
 	{
-		m_pWalkStraightX = Sprite::CreateSpriteSheet(player1Sprite, {0.0f,90.0f}, { 32.0f,30.0f }, 3, 0.0f);
+		m_pWalkStraightX = Sprite::CreateSpriteSheet(player1Sprite, { 0.0f,90.0f }, { 32.0f,30.0f }, 3, 0.0f);
 		m_pWalkUpX = Sprite::CreateSpriteSheet(player1Sprite, { 0.0f,120.0f }, { 32.0f,30.0f }, 3, 0.0f);
 		m_PWalkDownX = Sprite::CreateSpriteSheet(player1Sprite, { 0.0f,150.0f }, { 32.0f,30.0f }, 3, 0.0f);
 	}
@@ -32,9 +34,9 @@ void PlayerDigger::Awake()
 
 
 	auto spriteRenderer = CreateComponent<SpriteRenderer>();
-	spriteRenderer->SetSprite(m_pWalkStraight[0],true);
+	spriteRenderer->SetSprite(m_pWalkStraight[0], true);
 	m_pSpriteRenderer = spriteRenderer;
-	
+
 	// Create Animation Clips and initialize animator
 	auto playerIdle = AnimationClip::Create(GetShared<PlayerDigger>());
 	playerIdle->AddProperty(spriteRenderer, m_pWalkStraight);
@@ -48,13 +50,14 @@ void PlayerDigger::Awake()
 	auto playerDead = AnimationClip::Create(GetShared<PlayerDigger>());
 	playerDead->AddProperty(spriteRenderer, m_pDeadSprite);
 	playerDead->SetSampleRate(4);
-	
-	auto animator = CreateComponent<Animator>();
-	animator->AddTransition(playerIdle, "PlayerUp", playerWalkUp,false);
-	animator->AddTransition(playerIdle, "PlayerDown", playerWalkDown,false);
+
+	m_pAnimator = CreateComponent<Animator>();
+	const auto animator = m_pAnimator.lock();
+	animator->AddTransition(playerIdle, "PlayerUp", playerWalkUp, false);
+	animator->AddTransition(playerIdle, "PlayerDown", playerWalkDown, false);
 
 	animator->SetDefaultAnimClip(playerIdle);
-	
+
 	// Initialize Controller
 	auto inputComponent = CreateComponent<InputComponent>();
 	inputComponent->BindAxis("Horizontal", GetShared<PlayerDigger>(), &PlayerDigger::MoveHorizontal);
@@ -74,6 +77,9 @@ void PlayerDigger::MoveHorizontal(float value)
 	GetTransform()->SetRelativePosition(vel);
 
 	m_pSpriteRenderer.lock()->SetFlipY(value < 1.0f ? true : false);
+	const auto animator = m_pAnimator.lock();
+	animator->SetBool("PlayerUp", false);
+	animator->SetBool("PlayerDown", false);
 }
 
 void PlayerDigger::MoveVertical(float value)
@@ -82,5 +88,8 @@ void PlayerDigger::MoveVertical(float value)
 	glm::fvec3 worldUp{ 0.0f,1.0f,0.0f };
 	auto vel = value * worldUp * deltaSec * 200.0f;
 	GetTransform()->SetRelativePosition(vel);
-
+	const auto animator = m_pAnimator.lock();
+	const bool playerGoesUp{ value > 0.0f };
+	animator->SetBool("PlayerUp", playerGoesUp);
+	animator->SetBool("PlayerDown", !playerGoesUp);
 }

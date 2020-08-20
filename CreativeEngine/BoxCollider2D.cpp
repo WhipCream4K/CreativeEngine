@@ -9,42 +9,44 @@ glm::fvec2 dae::BoxCollider2D::GetCenter() const
 	return center;
 }
 
-void dae::BoxCollider2D::Resolve(const std::vector<std::weak_ptr<Collider>>& colliders)
-{
-	//TODO: Only supports AABB
-	for (const auto& collider : colliders)
-	{
-		auto boxCollider{ std::dynamic_pointer_cast<BoxCollider2D>(collider.lock()) };
-		if (boxCollider)
-		{
-			const auto& objLeftCenter{ boxCollider->GetCenter() };
-			const auto& objLeftSize{ boxCollider->GetSize() };
-			const auto& objScaling{ boxCollider->GetScale() };
-
-			const glm::fvec2 minObjLeft{ objLeftCenter - (objLeftSize / 2.0f * objScaling) };
-			const glm::fvec2 maxObjLeft{ objLeftCenter + (objLeftSize / 2.0f * objScaling) };
-
-			const auto& thisScaling{ *m_ObjScale };
-			const glm::fvec2 minObjRight{ GetCenter() - (m_Size / 2.0f * thisScaling) };
-			const glm::fvec2 maxObjRight{ GetCenter() + (m_Size / 2.0f * thisScaling) };
-
-			const bool r1 = minObjRight.x < maxObjLeft.x;
-			const bool r2 = maxObjRight.x > minObjLeft.x;
-			const bool r3 = minObjRight.y < maxObjLeft.y;
-			const bool r4 = maxObjRight.y > minObjLeft.y;
-
-			const bool isOverlap = r1 && r2 && r3 && r4;
-			if (isOverlap)
-			{
-				boxCollider->SetIsTrigger(isOverlap);
-				boxCollider->AddCaches(GetShared<Collider>());
-				AddCaches(boxCollider);
-			}
-		}
-	}
-
-	m_IsTriggered = !m_pCaches.empty();
-}
+//void dae::BoxCollider2D::Resolve(const std::vector<std::weak_ptr<Collider>>& colliders)
+//{
+//	//TODO: Only supports AABB
+//	for (const auto& collider : colliders)
+//	{
+//		auto boxCollider{ std::dynamic_pointer_cast<BoxCollider2D>(collider.lock()) };
+//		if (boxCollider)
+//		{
+//			const auto& objLeftCenter{ boxCollider->GetCenter() };
+//			const auto& objLeftSize{ boxCollider->GetSize() };
+//			const auto& objScaling{ boxCollider->GetScale() };
+//
+//			const glm::fvec2 minObjLeft{ objLeftCenter - (objLeftSize / 2.0f * objScaling) };
+//			const glm::fvec2 maxObjLeft{ objLeftCenter + (objLeftSize / 2.0f * objScaling) };
+//
+//			const auto& thisScaling{ *m_ObjScale };
+//			const glm::fvec2 minObjRight{ GetCenter() - (m_Size / 2.0f * thisScaling) };
+//			const glm::fvec2 maxObjRight{ GetCenter() + (m_Size / 2.0f * thisScaling) };
+//
+//			const bool r1 = minObjRight.x < maxObjLeft.x;
+//			const bool r2 = maxObjRight.x > minObjLeft.x;
+//			const bool r3 = minObjRight.y < maxObjLeft.y;
+//			const bool r4 = maxObjRight.y > minObjLeft.y;
+//
+//			const bool isOverlap = r1 && r2 && r3 && r4;
+//			
+//			if (!isOverlap)
+//				continue;
+//			
+//			boxCollider->SetIsTrigger(isOverlap);
+//			boxCollider->AddCaches(GetShared<Collider>());
+//			AddCaches(boxCollider);
+//			
+//		}
+//	}
+//
+//	m_IsTriggered = !m_pCaches.empty();
+//}
 
 void dae::BoxCollider2D::Resolve(const std::shared_ptr<Collider>& collider)
 {
@@ -72,6 +74,45 @@ void dae::BoxCollider2D::Resolve(const std::shared_ptr<Collider>& collider)
 		const bool isOverlap = r1 && r2 && r3 && r4;
 		if (isOverlap)
 			m_pCaches.emplace_back(boxCollider);
+	}
+
+	m_IsTriggered = !m_pCaches.empty();
+}
+
+void dae::BoxCollider2D::Resolve(std::vector<std::weak_ptr<Collider>> colliders)
+{
+	//TODO: Only supports AABB
+	for (const auto& collider : colliders)
+	{
+		auto boxCollider{ std::dynamic_pointer_cast<BoxCollider2D>(collider.lock()) };
+		if (boxCollider)
+		{
+			const auto& objLeftCenter{ boxCollider->GetCenter() };
+			const auto& objLeftSize{ boxCollider->GetSize() };
+			const auto& objScaling{ boxCollider->GetScale() };
+
+			const glm::fvec2 minObjLeft{ objLeftCenter - (objLeftSize / 2.0f * objScaling) };
+			const glm::fvec2 maxObjLeft{ objLeftCenter + (objLeftSize / 2.0f * objScaling) };
+
+			const auto& thisScaling{ *m_ObjScale };
+			const glm::fvec2 minObjRight{ GetCenter() - (m_Size / 2.0f * thisScaling) };
+			const glm::fvec2 maxObjRight{ GetCenter() + (m_Size / 2.0f * thisScaling) };
+
+			const bool r1 = minObjRight.x < maxObjLeft.x;
+			const bool r2 = maxObjRight.x > minObjLeft.x;
+			const bool r3 = minObjRight.y < maxObjLeft.y;
+			const bool r4 = maxObjRight.y > minObjLeft.y;
+
+			const bool isOverlap = r1 && r2 && r3 && r4;
+
+			if (!isOverlap)
+				continue;
+
+			boxCollider->SetIsTrigger(isOverlap);
+			boxCollider->AddCaches(GetShared<Collider>());
+			AddCaches(boxCollider);
+
+		}
 	}
 
 	m_IsTriggered = !m_pCaches.empty();

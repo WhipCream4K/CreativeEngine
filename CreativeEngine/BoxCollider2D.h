@@ -14,8 +14,9 @@ namespace dae
 		constexpr auto GetSize() const noexcept -> const glm::fvec2& { return m_Size; }
 		glm::fvec2 GetCenter() const;
 
-		void Resolve(const std::vector<std::weak_ptr<Collider>>& colliders) override;
+		//void Resolve(const std::vector<std::weak_ptr<Collider>>& colliders) override;
 		void Resolve(const std::shared_ptr<Collider>& collider) override;
+		void Resolve(std::vector<std::weak_ptr<Collider>> colliders) override;
 		
 	protected:
 		

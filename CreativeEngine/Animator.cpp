@@ -84,7 +84,7 @@ void dae::Animator::AddTransition(const std::shared_ptr<AnimationClip>& from, co
 
 	AnimTransition transition{ to };
 	auto& value = m_pAnimParams.at(name);
-	transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
+	transition.GetTransitionConditions().emplace_back(value.name, &value.condition);
 	from->AddTransition(transition);
 }
 
@@ -110,7 +110,7 @@ void dae::Animator::AddBlankTransition(const std::shared_ptr<AnimationClip>& fro
 
 	AnimTransition transition{ to };
 	auto& value = m_pAnimParams.at("");
-	transition.GetTransitionConditions().push_back(std::make_pair(value.name, &value.condition));
+	transition.GetTransitionConditions().emplace_back(value.name, &value.condition);
 	from->AddTransition(transition);
 }
 

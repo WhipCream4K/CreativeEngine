@@ -4,7 +4,7 @@
 
 namespace dae
 {
-	class Animator : public BaseComponent
+	class Animator final : public BaseComponent
 	{
 	public:
 
