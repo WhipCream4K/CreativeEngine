@@ -36,6 +36,7 @@ namespace dae
 	{
 		m_Position.x += deltaPos.x;
 		m_Position.y += deltaPos.y;
+		m_Position.z += deltaPos.z;
 	}
 }
 

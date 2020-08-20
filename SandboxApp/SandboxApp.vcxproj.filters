@@ -13,60 +13,63 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Digger">
+      <UniqueIdentifier>{de99dbc0-c3f7-4675-8e53-587aab9d942b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandboxApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sandbox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Digger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerDigger.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Digger</Filter>
     </ClCompile>
     <ClCompile Include="Gold.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PickUps.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Digger</Filter>
     </ClCompile>
     <ClCompile Include="Jewel.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Digger</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Digger</Filter>
+    </ClCompile>
+    <ClCompile Include="PickUps.cpp">
+      <Filter>Digger</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerDigger.cpp">
+      <Filter>Digger</Filter>
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Digger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sandbox.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="SoundManager.h">
+      <Filter>Digger</Filter>
     </ClInclude>
     <ClInclude Include="Digger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerDigger.h">
-      <Filter>Header Files</Filter>
+      <Filter>Digger</Filter>
     </ClInclude>
     <ClInclude Include="Gold.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PickUps.h">
-      <Filter>Header Files</Filter>
+      <Filter>Digger</Filter>
     </ClInclude>
     <ClInclude Include="Jewel.h">
-      <Filter>Header Files</Filter>
+      <Filter>Digger</Filter>
     </ClInclude>
-    <ClInclude Include="SoundManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="pch.h">
+      <Filter>Digger</Filter>
+    </ClInclude>
+    <ClInclude Include="PickUps.h">
+      <Filter>Digger</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerDigger.h">
+      <Filter>Digger</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox.h">
+      <Filter>Digger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

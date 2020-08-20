@@ -7,6 +7,8 @@
 #include "SpriteRenderer.h"
 #include "Gold.h"
 #include "Jewel.h"
+#include "Text.h"
+#include "TextRenderer.h"
 #include <fstream>
 #include <iostream>
 
@@ -37,7 +39,6 @@ void Digger::SceneInitialize()
 	// PickUps -> Layer -1
 	// Dynamic -> Layer 0
 
-	auto cherry = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Cherry.tga", "Cherry");
 	// Initialize Dark sky
 	{
 		auto blackPixel = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Black.png", "Black");
@@ -56,6 +57,16 @@ void Digger::SceneInitialize()
 		background->GetTransform()->SetScale(1.8f, 1.8f);
 		auto renderer = background->CreateComponent<SpriteRenderer>();
 		renderer->SetSprite(backgroundSprite,true);
+	}
+
+	// Test Text
+	{
+		auto fontData = ResourceManager::Load<DefaultFontData>("./Resources/Digger/Font/Diggerfont-Regular.ttf", "DiggerFont");
+		m_pDiggerFont = Text::Create(fontData, "HELLO_WORLD_", 100);
+		auto gameObject = CreateGameObject({ -100.0f,300.0f,-1.0f });
+		auto textRenderer = gameObject->CreateComponent<TextRenderer>();
+		textRenderer->SetText(m_pDiggerFont);
+		textRenderer->SetForegroundColor({ 0.0f,1.0f,0.0f,1.0f });
 	}
 
 	// Initialize walk path
@@ -78,7 +89,6 @@ void Digger::SceneInitialize()
 		}
 	}
 	
-	m_pCherrySprite = Sprite::Create(cherry);
 
 	std::ifstream inStream{ "./Resources/Digger/Level_0.bin", std::ios::in | std::ios::binary };
 

@@ -206,6 +206,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="CharacterController.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CreativeStructs.cpp" />
+    <ClCompile Include="EventDispatcher.cpp" />
     <ClCompile Include="FMODAudioService.cpp" />
     <ClCompile Include="AudioSource.cpp" />
     <ClCompile Include="BaseAsset.cpp" />
@@ -232,6 +233,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="InputComponent.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="ITextureEntity.cpp" />
+    <ClCompile Include="Movement.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -245,6 +247,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="SDLFontData.cpp" />
     <ClCompile Include="SDLTextureData.cpp" />
     <ClCompile Include="ServiceLocator.cpp" />
@@ -263,6 +266,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="BoxCollider2D.h" />
     <ClInclude Include="CharacterController.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="EventDispatcher.h" />
     <ClInclude Include="FMODAudioService.h" />
     <ClInclude Include="AudioSource.h" />
     <ClInclude Include="BaseAsset.h" />
@@ -291,6 +295,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="ITextureEntity.h" />
+    <ClInclude Include="Movement.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="PhysicsScene.h" />
@@ -299,6 +304,7 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SDLFontData.h" />
     <ClInclude Include="SDLTextureData.h" />
     <ClInclude Include="ServiceLocator.h" />

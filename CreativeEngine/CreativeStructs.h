@@ -132,7 +132,7 @@ namespace dae
 		glm::fvec4 fgColor;
 		glm::fvec4 bgColor;
 	};
-	
+
 	template<typename ret, typename ...Args>
 	struct MulticastContainer
 	{
@@ -204,8 +204,8 @@ namespace dae
 		//{
 		//}
 
-		MulticastCondition(std::function<bool(Args...)>&& fc,Args... args)
-			: m_Container(std::move(fc),args...)
+		MulticastCondition(std::function<bool(Args...)>&& fc, Args... args)
+			: m_Container(std::move(fc), args...)
 		{
 		}
 
@@ -219,5 +219,59 @@ namespace dae
 	bool MulticastCondition<Args...>::Invoke()
 	{
 		return std::apply(m_Container.func, m_Container.arguments);
+	}
+
+	template<typename T, typename ...Args>
+	using Event = void(T::*)(Args...);
+
+	class GameObject;
+	template<typename UserObject = GameObject>
+	struct DelegateNoParam : IMuticastAction
+	{
+		DelegateNoParam(void(UserObject::* functor)(), std::weak_ptr<UserObject>&& caller)
+			: pFunctor(std::move(functor))
+			, pCaller(std::move(caller))
+		{}
+
+		void Invoke() override;
+
+		Event<UserObject, void> pFunctor;
+		std::weak_ptr<UserObject> pCaller;
+	};
+
+	template <typename UserObject>
+	void DelegateNoParam<UserObject>::Invoke()
+	{
+		auto validCaller{ pCaller.lock() };
+		if (validCaller)
+		{
+			((*validCaller).*pFunctor)();
+		}
+	}
+
+	template<typename UserObject = GameObject, typename ...Args>
+	struct DelegateWithParams : IMuticastAction
+	{
+		DelegateWithParams(void(UserObject::* functor)(Args...), std::weak_ptr<UserObject>&& caller, Args... arguments)
+			:pFunctor(std::move(functor))
+			, pCaller(std::move(caller))
+			, tArguments(arguments)
+		{}
+
+		void Invoke() override;
+
+		Event<UserObject, Args...> pFunctor;
+		std::weak_ptr<UserObject> pCaller;
+		std::tuple<Args...> tArguments;
+	};
+
+	template <typename UserObject, typename ... Args>
+	void DelegateWithParams<UserObject, Args...>::Invoke()
+	{
+		auto validCaller{ pCaller.lock() };
+		if(validCaller)
+		{
+			((*validCaller).*pFunctor)(tArguments...);
+		}
 	}
 }
