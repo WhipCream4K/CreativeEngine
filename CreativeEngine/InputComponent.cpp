@@ -4,8 +4,8 @@
 void dae::ActionHandle::ShouldExecute()
 {
 	// Get call once the state of the key is changed
-	
- 	isPressedFlag = isPressedFlag == false ? true : false;
+
+	isPressedFlag = !isPressedFlag /*== false ? true : false*/;
 
 	switch (inputEvent) {
 	case InputEvent::IE_Pressed:
@@ -20,11 +20,10 @@ void dae::ActionHandle::ShouldExecute()
 
 		break;
 	case InputEvent::IE_Down:
-		
+
 		isTriggered = isPressedFlag;
 
 		break;
-	default:;
 	}
 }
 
@@ -48,9 +47,9 @@ void dae::InputComponent::Update()
 			if (handle.second.inputEvent == InputEvent::IE_Pressed)
 				handle.second.isTriggered = false;
 
- 			if (handle.second.inputEvent == InputEvent::IE_Released)
+			if (handle.second.inputEvent == InputEvent::IE_Released)
 				handle.second.isTriggered = false;
-			
+
 			handle.second.action->Invoke();
 		}
 	}

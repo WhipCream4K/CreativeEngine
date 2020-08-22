@@ -25,7 +25,7 @@ namespace dae
 		
 	protected:
 
-		void Awake() override;
+		void Start() override;
 		
 		std::vector<std::weak_ptr<Collider>> m_pCaches;
 		const glm::fvec3* m_ObjPos;

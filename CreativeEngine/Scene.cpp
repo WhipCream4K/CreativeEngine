@@ -10,6 +10,7 @@ dae::Scene::Scene(const std::string& sceneName)
 	: m_Context{}
 	, m_SceneName{ sceneName }
 	, m_IsInit{}
+	, m_CallForDelete()
 {
 }
 
@@ -20,6 +21,7 @@ auto dae::Scene::Destroy(const std::shared_ptr<IInternalGameObject>& ref) noexce
 		if (ref == gameObject)
 		{
 			gameObject->m_ToBeDestroyed = true;
+			m_CallForDelete = true;
 			gameObject->OnDestroy();
 		}
 	}
@@ -110,41 +112,53 @@ void dae::Scene::RootUpdate()
 
 	// 1. User Update as in update what user want to do
 	// 2. Physics Object Update
-	
+
 	Update();
-	
+
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootUpdate();
 	}
 
 	m_pPhysicsScene->Update();
-	
+
 
 	for (const auto& gameObject : m_pGameObjects)
 	{
 		gameObject->RootLateUpdate();
 	}
-	
+
 	AddNewPendingGameObjects();
 	DestroyPendingGameObject();
 }
 
 void dae::Scene::DestroyPendingGameObject()
 {
+	if(!m_CallForDelete)
+		return;
+	if (!m_pPhysicsScene->IsResultValid())
+		return;
+
 	const auto result = std::remove_if(m_pGameObjects.begin(), m_pGameObjects.end(), [](const std::shared_ptr<IInternalGameObject>& ref)
 		{
 			return ref->m_ToBeDestroyed;
 		});
 
-	if(result != m_pGameObjects.end())
-		m_pGameObjects.erase(result);
+	if (result != m_pGameObjects.end())
+		m_pGameObjects.erase(result,m_pGameObjects.end());
+	m_CallForDelete = false;
+	m_pPhysicsScene->ClearObjers();
 }
 
 void dae::Scene::AddNewPendingGameObjects()
 {
-	for (auto & pending : m_pPendingAdd)
+	if (!m_pPhysicsScene->IsResultValid())
+		return;
+
+	for (auto& pending : m_pPendingAdd)
 	{
+		pending->RootAwake();
+		pending->RootStart();
 		m_pGameObjects.emplace_back(std::move(pending));
 	}
 

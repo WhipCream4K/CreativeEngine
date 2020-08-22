@@ -160,6 +160,13 @@ namespace dae
 		virtual void Invoke() = 0;
 	};
 
+	template<typename ...Args>
+	struct IMulticastDelegate
+	{
+		virtual ~IMulticastDelegate() = default;
+		virtual void Invoke(Args... arguments) = 0;
+	};
+	
 	struct IMulticastCondition
 	{
 		virtual ~IMulticastCondition() = default;
@@ -249,29 +256,46 @@ namespace dae
 		}
 	}
 
-	template<typename UserObject = GameObject, typename ...Args>
-	struct DelegateWithParams : IMuticastAction
-	{
-		DelegateWithParams(void(UserObject::* functor)(Args...), std::weak_ptr<UserObject>&& caller, Args... arguments)
-			:pFunctor(std::move(functor))
-			, pCaller(std::move(caller))
-			, tArguments(arguments)
-		{}
+	//template<typename UserObject, typename ...Args>
+	//struct DelegateWithParams : IMuticastAction
+	//{
+	//	DelegateWithParams(void(UserObject::* functor)(Args...), std::weak_ptr<UserObject>&& caller, Args&&... params)
+	//		:pFunctor(std::move(functor))
+	//		, pCaller(std::move(caller))
+	//		, pParams(std::move(params...))
+	//	{}
 
-		void Invoke() override;
+	//	void Invoke() override;
 
-		Event<UserObject, Args...> pFunctor;
-		std::weak_ptr<UserObject> pCaller;
-		std::tuple<Args...> tArguments;
-	};
+	//	Event<UserObject, Args...> pFunctor;
+	//	std::tuple<Args...> pParams;
+	//	std::weak_ptr<UserObject> pCaller;
+	//};
 
-	template <typename UserObject, typename ... Args>
-	void DelegateWithParams<UserObject, Args...>::Invoke()
-	{
-		auto validCaller{ pCaller.lock() };
-		if(validCaller)
-		{
-			((*validCaller).*pFunctor)(tArguments...);
-		}
-	}
+	//template <typename UserObject, typename ... Args>
+	//void DelegateWithParams<UserObject, Args...>::Invoke()
+	//{
+	//	auto validCaller{ pCaller.lock() };
+	//	if (validCaller)
+	//		std::apply(pFunctor,std::forward_as_tuple(validCaller,pParams));
+	//	//	((*validCaller).*pFunctor)(pParams...);
+	//}
+
+	//template <typename UserObject, typename ... Args>
+	//void DelegateWithParams<UserObject, Args...>::Invoke(Args... arguments)
+	//{
+	//	auto validCaller{ pCaller.lock() };
+	//	if (validCaller)
+	//		((*validCaller).*pFunctor)(arguments...);
+	//}
+	
+	//template <typename UserObject, typename ... Args>
+	//void DelegateWithParams<UserObject, Args...>::Invoke()
+	//{
+	//	auto validCaller{ pCaller.lock() };
+	//	if(validCaller)
+	//	{
+	//		((*validCaller).*pFunctor)(tArguments...);
+	//	}
+	//}
 }

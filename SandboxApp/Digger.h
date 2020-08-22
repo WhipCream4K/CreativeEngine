@@ -31,6 +31,10 @@ public:
 	};
 
 	~Digger();
+
+	static const glm::fvec2 PlayArea;
+	static const glm::fvec2 CellSize;
+	static const uint32_t CellCount;
 	
 protected:
 
@@ -45,7 +49,6 @@ private:
 	std::shared_ptr<dae::Text> m_pDiggerFont;
 	std::shared_ptr<dae::Sprite> m_pBackgroundSprite;
 
-	static const uint32_t m_CellCount;
 
 	char* m_pCellSemantics;
 };

@@ -11,6 +11,8 @@ namespace dae
 	public:
 		PhysicsScene();
 		void RegisterCollider(std::weak_ptr<Collider>&& collider);
+		void ClearObjers();
+		bool IsResultValid() const;
 		void Update();
 		void Render() const;
 	private:

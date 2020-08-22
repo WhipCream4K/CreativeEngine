@@ -154,7 +154,7 @@ namespace dae
 
 		void Invoke(float axisValue) override;
 
-		VariadicFuncPtr<UserClass,float> funcPtr;
+		VariadicFuncPtr<UserClass, float> funcPtr;
 		std::weak_ptr<UserClass> caller;
 	};
 
@@ -178,6 +178,9 @@ namespace dae
 	{
 	public:
 
+		// For Game pad
+		constexpr auto SetPlayerIndexForGamepad(UINT8 index) noexcept -> void { m_GamepadIndex = index; }
+		constexpr auto GetPlayerIndex() const noexcept -> UINT8 { return m_GamepadIndex; }
 
 		// Action mapping
 		template<typename UserClass>
@@ -210,15 +213,13 @@ namespace dae
 	protected:
 
 		void Update() override;
-
 		void Awake() override;
-
 
 	private:
 
 		std::unordered_map<std::string, ActionHandle> m_ActionHandle;
 		std::unordered_map<std::string, AxisHandle> m_AxisHandle;
-
+		UINT8 m_GamepadIndex{};
 	};
 
 	template <typename UserClass>
@@ -227,7 +228,7 @@ namespace dae
 		ActionHandlerSignature::ObjectFunctionDelegate<UserClass> funcPtr) -> void
 	{
 		auto callback{ std::make_shared<DelegateCallbackNoParams<UserClass>>(funcPtr,std::move(caller)) };
-		ActionHandle handle{ actionName,inputEvent,std::move(callback) };
+		ActionHandle handle{ actionName,inputEvent,std::move(callback)};
 		m_ActionHandle.try_emplace(actionName, std::move(handle));
 	}
 

@@ -16,7 +16,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\vld\lib\Win64;$(SolutionDir)Libs\SDL2\lib\x64;$(SolutionDir)Libs\SDL2_image\lib\x64;$(SolutionDir)Libs\SDL2_ttf\lib\x64;$(SolutionDir)Libs\fmod\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;vld.lib;fmodL_vc.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /r /e "$(SolutionDir)Resources" "$(OutDir)Resources\"

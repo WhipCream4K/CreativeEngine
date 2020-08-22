@@ -4,19 +4,42 @@
 #include "InputComponent.h"
 #include "Animator.h"
 #include "BoxCollider2D.h"
-#include "EventDispatcher.h"
+#include "Digger.h"
 #include "Movement.h"
 
 PlayerDigger::PlayerDigger()
 	: GameObject()
+	, m_MovementSpeed()
+	, m_MoveTimeLimitX(0.08f)
+	, m_MoveTimeLimitY(0.08f)
+	, m_TimeCountX()
+	, m_TimeCountY()
+	, m_HorizontalScale()
+	, m_VerticalScale()
 	, m_IsShellEmpty()
+	, m_HasMovedHorizontal()
+	, m_HasMovedVertical()
 {
+}
+
+void PlayerDigger::SetPlayerStart(const glm::fvec3& position)
+{
+	if (m_pRefTransform.expired())
+	{
+		auto transform = GetTransform();
+		m_pRefTransform = transform;
+	}
+
+	m_pRefTransform.lock()->SetPosition(position);
 }
 
 void PlayerDigger::Awake()
 {
 	// Initialize All needed sprites
 	using namespace dae;
+
+	m_pRefTransform = GetTransform();
+
 	auto player1Sprite = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Player1.tga", "Player1");
 	auto player1DeadSprite = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Player1_Dead.tga", "Player1_Dead");
 
@@ -70,20 +93,88 @@ void PlayerDigger::Awake()
 	collider->SetSize({ 32.0f,30.0f });
 	collider->EnableDebugDraw(true);
 
-	// Initialize Event Dispatcher
-	auto dispatcher = CreateComponent<EventDispatcher>();
-	auto* action = dispatcher->CreateDispatcher("PlayerDeath");
-	if (action)
-		m_pDispatcherHandler = action;
+	const auto& scale{ m_pRefTransform.lock()->GetScale() };
+	m_PlayerActualSize.x = scale.x * 32.0f;
+	m_PlayerActualSize.y = scale.y * 30.0f;
 
-	// Initialize Movement component
-	m_pMovement = CreateComponent<Movement>();
+	// Initialize Player speed one click per pixel
+
+		//auto movement = CreateComponent<Movement>();
+		//movement->SetAcceleration(0.0f);
+		//movement->SetMaxVelocity(m_MovementSpeed.x);
+}
+
+void PlayerDigger::Update()
+{
+	const float deltaSeconds{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
+
+	if (m_HasMovedHorizontal)
+	{
+		m_TimeCountX += deltaSeconds;
+		if (m_TimeCountX >= m_MoveTimeLimitX)
+		{
+			m_TimeCountX -= m_MoveTimeLimitX;
+			m_HasMovedHorizontal = false;
+			m_pRefTransform.lock()->SetRelativePosition({ Digger::CellSize.x / 4.0f * m_HorizontalScale,0.0f,0.0f });
+		}
+	}
+
+	if (m_HasMovedVertical)
+	{
+		m_TimeCountY += deltaSeconds;
+		if (m_TimeCountY >= m_MoveTimeLimitY)
+		{
+			m_TimeCountY -= m_MoveTimeLimitY;
+			m_HasMovedVertical = false;
+			m_pRefTransform.lock()->SetRelativePosition({ 0.0f,Digger::CellSize.y / 6.0f * m_VerticalScale,0.0f });
+		}
+	}
+}
+
+void PlayerDigger::LateUpdate()
+{
+	// Clamp player to the play area
+	auto transform = GetTransform();
+	glm::fvec3 currPos{ transform->GetPosition() };
+	glm::fvec3 newPos{};
+	newPos.z = currPos.z;
+	const float playAreaX{ Digger::PlayArea.x / 2.0f };
+	const float playAreaY{ Digger::PlayArea.y / 2.0f };
+	const float halfPlayerSizeX{ m_PlayerActualSize.x / 2.0f };
+	const float halfPlayerSizeY{ m_PlayerActualSize.y / 2.0f };
+
+	bool isOutLeft{ currPos.x - halfPlayerSizeX < -playAreaX };
+	bool isOutRight{ currPos.x + halfPlayerSizeX > playAreaX };
+	bool isOutTop{ currPos.y + halfPlayerSizeY > playAreaY };
+	bool isOutBottom{ currPos.y - halfPlayerSizeY < -playAreaY };
+
+	if (!isOutLeft && !isOutRight && !isOutTop && !isOutBottom)
+		return;
+	
+	newPos.x = ((playAreaX - halfPlayerSizeX) * float(isOutLeft) * -1) + ((playAreaX - halfPlayerSizeX) * float(isOutRight));
+
+	newPos.y = ((playAreaY - halfPlayerSizeY) * float(isOutBottom) * -1) + ((playAreaY - halfPlayerSizeY) * float(isOutTop));
+
+	if (isOutLeft || isOutRight)
+		transform->SetPosition(newPos.x, currPos.y, currPos.z);
+	if (isOutTop || isOutBottom)
+	{
+		auto animator = m_pAnimator.lock();
+		transform->SetPosition(currPos.x, newPos.y, currPos.z);
+	}
 }
 
 void PlayerDigger::MoveHorizontal(float value)
 {
-	const glm::fvec3 worldRight{ 1.0f,0.0f,0.0f };
-	m_pMovement.lock()->AddMovementInput(worldRight, value);
+	//const glm::fvec3 worldRight{ 1.0f,0.0f,0.0f };
+
+	//const float deltaSeconds{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
+	//m_pRefTransform.lock()->SetRelativePosition({ Digger::CellSize.x / 4.0f * worldRight.x * value,0.0f,0.0f });
+
+	if (!m_HasMovedHorizontal)
+		m_HasMovedHorizontal = true;
+
+	m_HorizontalScale = value;
 
 	m_pSpriteRenderer.lock()->SetFlipY(value < 1.0f ? true : false);
 	const auto animator = m_pAnimator.lock();
@@ -93,10 +184,20 @@ void PlayerDigger::MoveHorizontal(float value)
 
 void PlayerDigger::MoveVertical(float value)
 {
-	glm::fvec3 worldUp{ 0.0f,1.0f,0.0f };
-	m_pMovement.lock()->AddMovementInput(worldUp, value);
+	//glm::fvec3 worldUp{ 0.0f,1.0f,0.0f };
+	//m_pMovement.lock()->AddMovementInput(worldUp, value);
+	if (!m_HasMovedVertical)
+		m_HasMovedVertical = true;
+
+	m_VerticalScale = value;
+
 	const auto animator = m_pAnimator.lock();
 	const bool playerGoesUp{ value > 0.0f };
 	animator->SetBool("PlayerUp", playerGoesUp);
 	animator->SetBool("PlayerDown", !playerGoesUp);
+}
+
+bool PlayerDigger::IsTouchingRimPlayArea()
+{
+	return false;
 }

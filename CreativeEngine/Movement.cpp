@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Movement.h"
+#include <iostream>
 
 dae::Movement::Movement()
 	: m_pRefTransform()
@@ -25,7 +26,7 @@ void dae::Movement::AddMovementInput(const glm::fvec2& dir, float scale)
 		if (m_MoveVelocity >= m_MaxVelocity)
 			m_MoveVelocity = m_MaxVelocity;
 		
-		m_Velocity2D = dir * m_MoveVelocity * clampScale;
+		m_Velocity2D = dir * clampScale * m_MoveVelocity;
 		transform->SetRelativePosition({ m_Velocity2D.x * deltaTime,m_Velocity2D.y * deltaTime,0.0f });
 		m_IsMovingPreviousFrame = true;
 	}

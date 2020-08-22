@@ -37,7 +37,7 @@ namespace dae
 
 		void Render() const override {}
 
-		void Awake() override {};
+		void Awake() override {}
 		void Start() override {}
 
 		void Update() override {};

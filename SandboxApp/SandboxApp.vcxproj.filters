@@ -45,6 +45,9 @@
     <ClCompile Include="SoundManager.cpp">
       <Filter>Digger</Filter>
     </ClCompile>
+    <ClCompile Include="ScoreManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SoundManager.h">
@@ -70,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="Sandbox.h">
       <Filter>Digger</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -75,7 +75,7 @@ namespace dae
 	private:
 
 		std::vector<std::shared_ptr<IInternalComponent>> m_pComponents;
-		std::vector<std::shared_ptr<PhysicsComponent>> m_pPhysicsComponent;
+		//std::vector<std::shared_ptr<PhysicsComponent>> m_pPhysicsComponent;
 		std::weak_ptr<Scene> m_pRefScene;
 		std::weak_ptr<Transform> m_pTransform;
 		std::string m_Tag;

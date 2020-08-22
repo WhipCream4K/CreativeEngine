@@ -25,10 +25,10 @@ void dae::GameObject::RootRender() const
 		component->Render();
 	}
 
-	for (const auto& physicsComponent : m_pPhysicsComponent)
-	{
-		physicsComponent->Render();
-	}
+	//for (const auto& physicsComponent : m_pPhysicsComponent)
+	//{
+	//	physicsComponent->Render();
+	//}
 }
 
 void dae::GameObject::RootAwake()

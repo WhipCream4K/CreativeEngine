@@ -247,7 +247,6 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
-    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="SDLFontData.cpp" />
     <ClCompile Include="SDLTextureData.cpp" />
     <ClCompile Include="ServiceLocator.cpp" />
@@ -304,7 +303,6 @@ xcopy /y /d "$(SolutionDir)Libs\fmod\lib\x64\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SDLFontData.h" />
     <ClInclude Include="SDLTextureData.h" />
     <ClInclude Include="ServiceLocator.h" />

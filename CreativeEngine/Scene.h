@@ -71,6 +71,7 @@ namespace dae
 		void RootUpdate() override final;
 		void DestroyPendingGameObject();
 		void AddNewPendingGameObjects();
+		bool m_CallForDelete;
 	};
 
 	template <typename T>
@@ -98,9 +99,9 @@ namespace dae
 		const auto temp = std::static_pointer_cast<IInternalGameObject>(gameObject);
 		temp->RegisterOwner(GetShared<Scene>());
 
-		// really bad
-		temp->RootAwake();
-		temp->RootStart();
+		//// really bad
+		//temp->RootAwake();
+		//temp->RootStart();
 
 		auto transform{ gameObject->GetTransform() };
 		transform->SetPosition(position);

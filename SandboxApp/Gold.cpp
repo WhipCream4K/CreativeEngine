@@ -19,11 +19,9 @@ void Gold::Awake()
 	auto spriteRenderer = CreateComponent<SpriteRenderer>();
 	spriteRenderer->SetSprite(m_pMoneySprites[0],true);
 
-	auto collider = CreateComponent<BoxCollider2D>();
-	collider->SetSize({ 32.0f,30.0f });
-	collider->SetIsTrigger(true);
-
 	auto pickUps = CreateComponent<PickUps>();
+	pickUps->SetGainScore(500);
+	m_pRefPickUps = pickUps;
 }
 
 void Gold::Start()
@@ -37,7 +35,6 @@ void Gold::Start()
 
 void Gold::Update()
 {
-	
 }
 
 void Gold::OnBeginOverlap(const std::vector<std::weak_ptr<dae::Collider>>& colliders)
