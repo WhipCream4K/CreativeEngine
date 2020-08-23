@@ -10,12 +10,12 @@
 #include "Text.h"
 #include "TextRenderer.h"
 #include "ScoreManager.h"
+#include "Nobblin.h"
 #include <fstream>
 #include <iostream>
 
 //#define BINARY_WRITER
 
-const uint32_t Digger::CellCount{ 150 };
 const glm::fvec2 Digger::PlayArea{ 975.0f - 60.0f,572 - 40.0f };
 const glm::fvec2 Digger::CellSize{ PlayArea.x / 15.0f , PlayArea.y / 10.0f };
 
@@ -32,6 +32,22 @@ Digger::~Digger()
 		delete[] m_pCellSemantics;
 		m_pCellSemantics = nullptr;
 	}
+}
+
+bool Digger::IsInBetweenCellsX(const glm::fvec3& position)
+{
+	const float remapPos{ position.x + (PlayArea.x / 2.0f) };
+	const int cellCol{ int(remapPos / CellSize.x) };
+	const float actualCellPosX{ (CellSize.x * float(cellCol)) + CellSize.x / 2.0f };
+	return abs(actualCellPosX - remapPos) > 0.01f;
+}
+
+bool Digger::IsInBetweenCellsY(const glm::fvec3& position)
+{
+	const float remapPos{ position.y + (PlayArea.y / 2.0f) };
+	const int cellRow{ int(remapPos / CellSize.y) };
+	const float actualCellPosY{ CellSize.y * float(cellRow) + CellSize.y / 2.0f };
+	return abs(actualCellPosY - remapPos) > 0.01f;
 }
 
 void Digger::SceneInitialize()
@@ -123,13 +139,13 @@ void Digger::SceneInitialize()
 
 		switch (semantics)
 		{
-		case BlockId::None:
+		case BlockId::None: SpawnPath(boundStart + cellOffSet, relativeScaling);
 
-			pSceneObject = CreateGameObject(boundStart + cellOffSet);
-			pSceneObject->GetTransform()->SetRelativePosition({ 0.0f,0.0f,-2.0f });
-			pSceneObject->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
-			pSpriteRenderer = pSceneObject->CreateComponent<SpriteRenderer>();
-			pSpriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
+			//pSceneObject = CreateGameObject(boundStart + cellOffSet);
+			//pSceneObject->GetTransform()->SetRelativePosition({ 0.0f,0.0f,-2.0f });
+			//pSceneObject->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
+			//pSpriteRenderer = pSceneObject->CreateComponent<SpriteRenderer>();
+			//pSpriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
 
 			break;
 		case BlockId::Level:																break;
@@ -144,6 +160,14 @@ void Digger::SceneInitialize()
 			pSceneObject = CreateGameObject<Jewel>(boundStart + cellOffSet);
 			pSceneObject->GetTransform()->SetScale(relativeScaling.x - 0.4f, relativeScaling.y - 0.4f);
 
+			break;
+
+		case BlockId::PlayerStart:
+
+			SpawnPath(boundStart + cellOffSet, relativeScaling);
+			pSceneObject = CreateGameObject<PlayerDigger>(boundStart + cellOffSet);
+			pSceneObject->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
+			
 			break;
 		}
 
@@ -162,7 +186,7 @@ void Digger::SceneInitialize()
 
 #ifdef BINARY_WRITER
 
-	std::string outName{ "./Resources/Digger/Test.bin" };
+	std::string outName{ "./Resources/Digger/Level_0_Test.bin" };
 	std::string inName{ "./Resources/Digger/Test.csv" };
 
 	std::ifstream insStream{ inName };
@@ -192,12 +216,12 @@ void Digger::SceneInitialize()
 #endif
 
 
-	auto player = CreateGameObject<PlayerDigger>();
-	//player->GetTransform()->SetScale(1.5f, 1.5f);
-	player->GetTransform()->SetPosition(0.0f, -150.0f, 0.0f);
-	player->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
+	//auto player = CreateGameObject<PlayerDigger>();
+	//player->GetTransform()->SetPosition(0.0f, -150.0f, 0.0f);
+	//player->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
 
 	auto scoreManager = CreateGameObject<ScoreManager>();
+	auto nobblin = CreateGameObject<Nobblin>();
 
 	//glm::fvec3 position{-200.0f,100.0f,0.0f};
 	//for (int i = 0; i < 150; ++i)
@@ -232,8 +256,19 @@ void Digger::SetUpInputMappingGroup()
 	auto& verticalGroup = GetSceneContext().pInputManager->AddInputAxisGroup("Vertical");
 	verticalGroup.AddKey(Key(Device::D_Keyboard, SDLK_UP), 1.0f);
 	verticalGroup.AddKey(Key(Device::D_Keyboard, SDLK_DOWN), -1.0f);
+	auto& shoot = GetSceneContext().pInputManager->AddInputActionGroup("Shoot");
+	shoot.AddKey(Key(Device::D_Keyboard, SDLK_SPACE));
 }
 
 void Digger::Update()
 {
+}
+
+void Digger::SpawnPath(const glm::fvec3& position, const glm::fvec2& scale)
+{
+	auto object = CreateGameObject(position);
+	object->GetTransform()->SetRelativePosition({ 0.0f,0.0f,-2.0f });
+	object->GetTransform()->SetScale(scale.x, scale.y);
+	auto spriteRenderer = object->CreateComponent<dae::SpriteRenderer>();
+	spriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
 }

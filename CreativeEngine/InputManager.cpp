@@ -82,9 +82,8 @@ void dae::InputManager::ReadInputs()
 	// current active player using sign bit
 	UINT8 activeController{};
 	for (UINT i = 0; i < m_MaxSupportedController; ++i)
-	{
 		activeController |= UINT8(1 << i * m_GamepadConnected[i]);
-	}
+	
 
 	// Action Mapping
 	for (auto& group : m_InputActionMappingGroup)

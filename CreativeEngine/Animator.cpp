@@ -121,6 +121,25 @@ void dae::Animator::AddAnimationClip(std::shared_ptr<AnimationClip> clip)
 	m_Clips.emplace_back(std::move(clip));
 }
 
+void dae::Animator::SetDefaultAnimClip(std::weak_ptr<AnimationClip>&& clip)
+{
+	if(!clip.expired())
+	{
+		for (const auto& currClip : m_Clips)
+		{
+			if (clip.lock() == currClip)
+			{
+				m_Default = currClip;
+				return;
+			}
+		}
+
+		m_Clips.emplace_back(clip.lock());
+		m_Default = std::move(clip);
+	}
+
+}
+
 void dae::Animator::SetTrigger(const std::string& paramName)
 {
 	auto& value = m_pAnimParams.at(paramName);

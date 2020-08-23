@@ -19,6 +19,8 @@ public:
 		Level,
 		Gold,
 		Jewel,
+		PlayerStart,
+		EnemySpawn
 	};
 
 	enum class PathDirection
@@ -34,7 +36,9 @@ public:
 
 	static const glm::fvec2 PlayArea;
 	static const glm::fvec2 CellSize;
-	static const uint32_t CellCount;
+	static constexpr uint32_t CellCount{ 150 };
+	bool IsInBetweenCellsX(const glm::fvec3& position);
+	bool IsInBetweenCellsY(const glm::fvec3& position);
 	
 protected:
 
@@ -49,7 +53,7 @@ private:
 	std::shared_ptr<dae::Text> m_pDiggerFont;
 	std::shared_ptr<dae::Sprite> m_pBackgroundSprite;
 
-
+	void SpawnPath(const glm::fvec3& position,const glm::fvec2& scale);
 	char* m_pCellSemantics;
 };
 

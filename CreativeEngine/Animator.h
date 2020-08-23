@@ -18,7 +18,7 @@ namespace dae
 		void AddTransition(const std::shared_ptr<AnimationClip>& from,const std::string& name, const std::shared_ptr<AnimationClip>& to,bool isTrigger);
 		void AddBlankTransition(const std::shared_ptr<AnimationClip>& from, const std::shared_ptr<AnimationClip>& to);
 		void AddAnimationClip(std::shared_ptr<AnimationClip> clip);
-		void SetDefaultAnimClip(std::weak_ptr<AnimationClip>&& clip) { m_Default = std::move(clip); }
+		void SetDefaultAnimClip(std::weak_ptr<AnimationClip>&& clip);
 		void SetTrigger(const std::string& paramName);
 		void SetBool(const std::string& paramName, bool state);
 

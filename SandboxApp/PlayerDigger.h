@@ -9,10 +9,11 @@ namespace dae
 	class Movement;
 }
 
+class Digger;
 class PlayerDigger : public dae::GameObject
 {
 public:
-
+	
 	PlayerDigger();
 	static dae::EventDispatcher<void> OnDeath;
 	void SetPlayerStart(const glm::fvec3& position);
@@ -44,12 +45,15 @@ private:
 	std::weak_ptr<dae::Animator> m_pAnimator;
 	std::weak_ptr<dae::Movement> m_pMovement;
 
+	std::weak_ptr<Digger> m_pRefDiggerScene;
 	std::weak_ptr<dae::Transform> m_pRefTransform;
 	
 	glm::fvec2 m_MovementSpeed; // movement speed in pixels
 	glm::fvec2 m_PlayerActualSize;
 	const float m_MoveTimeLimitX;
 	const float m_MoveTimeLimitY;
+	bool m_PlayerFacingRight;
+	bool m_PlayerFacingUp;
 	float m_TimeCountX;
 	float m_TimeCountY;
 	float m_HorizontalScale;
@@ -60,6 +64,7 @@ private:
 
 	void MoveHorizontal(float value);
 	void MoveVertical(float value);
+	void Shoot();
 	bool IsTouchingRimPlayArea();
 };
 
