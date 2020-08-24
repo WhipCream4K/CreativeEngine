@@ -13,7 +13,8 @@ namespace dae
 
 		float GetMaxVelocity() const { return m_MaxVelocity; }
 		void SetMaxVelocity(float value) { m_MaxVelocity = value; }
-
+		// For projectiles
+		void SetInitialVelocity(float velocity);
 		void SetAcceleration(float value) { m_Acceleration = value; }
 		float GetAcceleration() const { return m_Acceleration; }
 

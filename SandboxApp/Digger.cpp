@@ -14,14 +14,19 @@
 #include <fstream>
 #include <iostream>
 
+#include "EnemySpawnManager.h"
+
 //#define BINARY_WRITER
 
 const glm::fvec2 Digger::PlayArea{ 975.0f - 60.0f,572 - 40.0f };
 const glm::fvec2 Digger::CellSize{ PlayArea.x / 15.0f , PlayArea.y / 10.0f };
+const glm::fvec2 Digger::ObjectRelativeScaling{ CellSize.x / 32.0f,CellSize.y / 30.0f };
+uint32_t Digger::PlayerLives{ 2 };
 
 Digger::Digger()
 	: Scene("Digger")
 	, m_pBigSprites()
+	, m_pCellSemantics()
 {
 }
 
@@ -44,10 +49,67 @@ bool Digger::IsInBetweenCellsX(const glm::fvec3& position)
 
 bool Digger::IsInBetweenCellsY(const glm::fvec3& position)
 {
-	const float remapPos{ position.y + (PlayArea.y / 2.0f) };
+	const float remapPos{ PlayArea.y / 2.0f + position.y };
 	const int cellRow{ int(remapPos / CellSize.y) };
 	const float actualCellPosY{ CellSize.y * float(cellRow) + CellSize.y / 2.0f };
 	return abs(actualCellPosY - remapPos) > 0.01f;
+}
+
+void Digger::UpdatePlayerMovement(const glm::fvec2& pos)
+{
+	const int currCellCol{ int((pos.x + (PlayArea.x / 2.0f)) / CellSize.x) };
+	const int currCellRow{ int(((PlayArea.y / 2.0f) - pos.y) / CellSize.y) };
+	// Check if this cell is a level cell
+	const uint32_t index{ uint32_t(currCellRow * int(MaxCellCol) + currCellCol) };
+	const BlockId semantics{ BlockId(m_pCellSemantics[index]) };
+	if (semantics != BlockId::None && semantics != BlockId::PlayerStart)
+	{
+		m_pCellSemantics[index] = char(BlockId::None);
+		glm::fvec2 cellPos{};
+		const glm::fvec2 offset{ CellSize.x / 2.0f,-CellSize.y / 2.0f };
+		cellPos.x = (float(currCellCol) * CellSize.x + offset.x) - PlayArea.x / 2.0f;
+		cellPos.y = PlayArea.y / 2.0f - (float(currCellRow) * CellSize.y - offset.y);
+
+		InstantiatePath({ cellPos.x,cellPos.y,-2.0f }, ObjectRelativeScaling);
+	}
+}
+
+Digger::BlockId Digger::GetBlockIdFromWorldPos(const glm::fvec3& position)
+{
+	uint32_t index{ GetBlockIndexFromWorldPos(position) };
+	BlockId blockId{ BlockId(m_pCellSemantics[index]) };
+	return blockId;
+}
+
+uint32_t Digger::GetBlockIndexFromWorldPos(const glm::fvec3& position)
+{
+	const int currCellCol{ int((position.x + (PlayArea.x / 2.0f)) / CellSize.x) };
+	const int currCellRow{ int((PlayArea.y / 2.0f - position.y) / CellSize.y) };
+
+	uint32_t index{ uint32_t(currCellRow * int(MaxCellCol) + currCellCol) };
+
+	index = index > CellCount ? CellCount : index;
+	return index;
+}
+
+glm::fvec3 Digger::GetWorldPosFromIndex(uint32_t index)
+{
+	int currRow{ int(index / MaxCellCol) - 1 };
+	int currCol{ int(index % MaxCellCol) - 1};
+
+	currRow = currRow < 0 ? 0 : currRow;
+	currRow = currRow > MaxCellRow ? int(MaxCellRow) : currRow;
+
+	currCol = currCol < 0 ? 0 : currCol;
+	currCol = currCol > MaxCellCol ? int(MaxCellCol) : currCol;
+	
+	const glm::fvec2 offset{ CellSize.x / 2.0f, -CellSize.y / 2.0f };
+	glm::fvec3 cellPos{};
+	cellPos.z = -2.0f;
+	cellPos.x = (float(currCol) * CellSize.x + offset.x) - PlayArea.x / 2.0f;
+	cellPos.y = PlayArea.y / 2.0f - (float(currRow) * CellSize.y - offset.y);
+
+	return cellPos;
 }
 
 void Digger::SceneInitialize()
@@ -133,6 +195,11 @@ void Digger::SceneInitialize()
 
 	inStream.close();
 
+	// Initialize Enemy SpawnManager
+	auto spawnManager{ CreateGameObject<EnemySpawnManager>() };
+	spawnManager->SetSpawnInterval(6.0f);
+	spawnManager->SetSpawnLimit(5);
+
 	for (uint32_t i = 0; i < CellCount; ++i)
 	{
 		BlockId semantics{ BlockId(m_pCellSemantics[i]) };
@@ -149,14 +216,14 @@ void Digger::SceneInitialize()
 
 			break;
 		case BlockId::Level:																break;
-		case BlockId::Gold:		
+		case BlockId::Gold:
 
-			 pSceneObject = CreateGameObject<Gold>(boundStart + cellOffSet);
-			 pSceneObject->GetTransform()->SetScale(relativeScaling.x - 0.4f, relativeScaling.y - 0.4f);
-			
+			pSceneObject = CreateGameObject<Gold>(boundStart + cellOffSet);
+			pSceneObject->GetTransform()->SetScale(relativeScaling.x - 0.4f, relativeScaling.y - 0.4f);
+
 			break;
-		case BlockId::Jewel:	
-			
+		case BlockId::Jewel:
+
 			pSceneObject = CreateGameObject<Jewel>(boundStart + cellOffSet);
 			pSceneObject->GetTransform()->SetScale(relativeScaling.x - 0.4f, relativeScaling.y - 0.4f);
 
@@ -166,7 +233,16 @@ void Digger::SceneInitialize()
 
 			SpawnPath(boundStart + cellOffSet, relativeScaling);
 			pSceneObject = CreateGameObject<PlayerDigger>(boundStart + cellOffSet);
+			m_pRefMainPlayer = std::static_pointer_cast<PlayerDigger>(pSceneObject);
 			pSceneObject->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
+			m_pRefMainPlayerPos = &pSceneObject->GetTransform()->GetPosition();
+
+			break;
+
+		case BlockId::EnemySpawn:
+
+			SpawnPath(boundStart + cellOffSet, relativeScaling);
+			spawnManager->SetSpawnPoint(boundStart + cellOffSet);
 			
 			break;
 		}
@@ -221,7 +297,7 @@ void Digger::SceneInitialize()
 	//player->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
 
 	auto scoreManager = CreateGameObject<ScoreManager>();
-	auto nobblin = CreateGameObject<Nobblin>();
+	//auto nobblin = CreateGameObject<Nobblin>();
 
 	//glm::fvec3 position{-200.0f,100.0f,0.0f};
 	//for (int i = 0; i < 150; ++i)
@@ -262,6 +338,7 @@ void Digger::SetUpInputMappingGroup()
 
 void Digger::Update()
 {
+
 }
 
 void Digger::SpawnPath(const glm::fvec3& position, const glm::fvec2& scale)
@@ -271,4 +348,17 @@ void Digger::SpawnPath(const glm::fvec3& position, const glm::fvec2& scale)
 	object->GetTransform()->SetScale(scale.x, scale.y);
 	auto spriteRenderer = object->CreateComponent<dae::SpriteRenderer>();
 	spriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
+}
+
+void Digger::InstantiatePath(const glm::fvec3& position, const glm::fvec2& scale)
+{
+	auto object = Instantiate(position, {}, scale);
+	//object->GetTransform()->SetRelativePosition({ 0.0f,0.0f,-2.0f });
+	auto spriteRenderer = object->CreateComponent<dae::SpriteRenderer>();
+	spriteRenderer->SetSprite(m_pWalkSprites.at(PathDirection::None), true);
+}
+
+void Digger::AddPathEdges()
+{
+
 }

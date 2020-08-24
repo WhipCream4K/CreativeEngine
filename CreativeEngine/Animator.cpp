@@ -13,49 +13,53 @@ void dae::Animator::Awake()
 
 void dae::Animator::Update()
 {
-	if (!m_Clips.empty())
+	if(m_IsActive)
 	{
-		if (!m_CurrentClip.lock())
-			m_CurrentClip = m_Default;
-
-		const auto sharedTemp = m_CurrentClip.lock();
-
-		if (sharedTemp)
+		if (!m_Clips.empty())
 		{
-			auto& transitions = sharedTemp->GetTransitions();
-			bool transitionTriggered = false;
-			AnimTransition* triggeredTransition{};
+			if (m_CurrentClip.expired())
+				m_CurrentClip = m_Default;
 
-			for (auto& transition : transitions)
+			const auto sharedTemp = m_CurrentClip.lock();
+
+			if (sharedTemp)
 			{
-				transitionTriggered = transition.IsTriggered();
-				if (transitionTriggered)
-				{
-					triggeredTransition = &transition;
-					break;
-				}
-			}
+				auto& transitions = sharedTemp->GetTransitions();
+				bool transitionTriggered = false;
+				AnimTransition* triggeredTransition{};
 
-			if (transitionTriggered)
-				m_CurrentClip = triggeredTransition->GetTargetState();
-
-			if (m_CurrentClip.lock()->Update())
-			{
-				if(transitionTriggered)
+				for (auto& transition : transitions)
 				{
-					auto& conditionValues = triggeredTransition->GetTransitionConditions();
-					for (const auto& value : conditionValues)
+					transitionTriggered = transition.IsTriggered();
+					if (transitionTriggered)
 					{
-						std::string str{ value.first };
-						auto& param = m_pAnimParams.at(str);
-						if (param.isATrigger)
-							param.condition = false;
+						triggeredTransition = &transition;
+						break;
 					}
 				}
-				m_CurrentClip = m_Default;
+
+				if (transitionTriggered)
+					m_CurrentClip = triggeredTransition->GetTargetState();
+
+				if (m_CurrentClip.lock()->Update())
+				{
+					if (transitionTriggered)
+					{
+						auto& conditionValues = triggeredTransition->GetTransitionConditions();
+						for (const auto& value : conditionValues)
+						{
+							std::string str{ value.first };
+							auto& param = m_pAnimParams.at(str);
+							if (param.isATrigger)
+								param.condition = false;
+						}
+					}
+					m_CurrentClip = m_Default;
+				}
 			}
 		}
 	}
+
 }
 
 void dae::Animator::AddTransition(const std::shared_ptr<AnimationClip>& from, const std::string& name,

@@ -71,6 +71,7 @@ namespace dae
 		void RootUpdate() override final;
 		void DestroyPendingGameObject();
 		void AddNewPendingGameObjects();
+		void DestroyPhysicsObjects();
 		bool m_CallForDelete;
 	};
 

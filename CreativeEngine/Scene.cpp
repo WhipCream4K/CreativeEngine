@@ -132,7 +132,8 @@ void dae::Scene::RootUpdate()
 	DestroyPendingGameObject();
 }
 
-void dae::Scene::DestroyPendingGameObject()
+void dae::Scene::
+DestroyPendingGameObject()
 {
 	if(!m_CallForDelete)
 		return;
@@ -146,8 +147,10 @@ void dae::Scene::DestroyPendingGameObject()
 
 	if (result != m_pGameObjects.end())
 		m_pGameObjects.erase(result,m_pGameObjects.end());
+	// For some reason weak ptr in physics is not expired when I erase gameobjects, so I need to call it out side this scope
+	//m_pPhysicsScene->ClearObjers();
+	m_pPhysicsScene->SetCallForDelete(true);
 	m_CallForDelete = false;
-	m_pPhysicsScene->ClearObjers();
 }
 
 void dae::Scene::AddNewPendingGameObjects()
@@ -163,4 +166,8 @@ void dae::Scene::AddNewPendingGameObjects()
 	}
 
 	m_pPendingAdd.clear();
+}
+
+void dae::Scene::DestroyPhysicsObjects()
+{
 }

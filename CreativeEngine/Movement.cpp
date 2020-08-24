@@ -6,8 +6,10 @@ dae::Movement::Movement()
 	: m_pRefTransform()
 	, m_pGameTime()
 	, m_Velocity2D()
+	, m_MaxVelocity2D()
 	, m_AccelerationTime(0.3f)
 	, m_MaxVelocity(200.0f)
+	, m_MoveVelocity()
 	, m_Acceleration(m_MaxVelocity / m_AccelerationTime)
 	, m_IsMovingPreviousFrame()
 {
@@ -25,11 +27,18 @@ void dae::Movement::AddMovementInput(const glm::fvec2& dir, float scale)
 		m_MoveVelocity += accel;
 		if (m_MoveVelocity >= m_MaxVelocity)
 			m_MoveVelocity = m_MaxVelocity;
-		
+
 		m_Velocity2D = dir * clampScale * m_MoveVelocity;
 		transform->SetRelativePosition({ m_Velocity2D.x * deltaTime,m_Velocity2D.y * deltaTime,0.0f });
 		m_IsMovingPreviousFrame = true;
 	}
+}
+
+void dae::Movement::SetInitialVelocity(float velocity)
+{
+	if (velocity > m_MaxVelocity)
+		m_MaxVelocity = velocity;
+	m_MoveVelocity = velocity;
 }
 
 void dae::Movement::Awake()

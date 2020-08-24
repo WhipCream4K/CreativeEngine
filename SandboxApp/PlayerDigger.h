@@ -7,15 +7,24 @@ namespace dae
 	class SpriteRenderer;
 	class Animator;
 	class Movement;
+	class AnimationClip;
 }
 
 class Digger;
 class PlayerDigger : public dae::GameObject
 {
 public:
+
+	enum class PlayerDirection
+	{
+		Right,
+		Left,
+		Down,
+		Up
+	};
 	
 	PlayerDigger();
-	static dae::EventDispatcher<void> OnDeath;
+	static dae::EventDispatcher<void*> OnDeath;
 	void SetPlayerStart(const glm::fvec3& position);
 	void SetPlayerSpeed(const glm::fvec2& speed) { m_MovementSpeed = speed; }
 
@@ -24,6 +33,7 @@ protected:
 	void Awake() override;
 	void Update() override;
 	void LateUpdate() override;
+	void OnBeginOverlap(const std::vector<std::weak_ptr<dae::Collider>>& otherColliders) override;
 	
 private:
 
@@ -47,24 +57,32 @@ private:
 
 	std::weak_ptr<Digger> m_pRefDiggerScene;
 	std::weak_ptr<dae::Transform> m_pRefTransform;
+	std::weak_ptr<dae::AnimationClip> m_pRefDeadAnimClip;
+	std::weak_ptr<dae::AnimationClip> m_pRefShellEmptyIdleAnimClip;
+	std::weak_ptr<dae::AnimationClip> m_pRefMainIdleAnimClip;
 	
 	glm::fvec2 m_MovementSpeed; // movement speed in pixels
 	glm::fvec2 m_PlayerActualSize;
 	const float m_MoveTimeLimitX;
 	const float m_MoveTimeLimitY;
-	bool m_PlayerFacingRight;
-	bool m_PlayerFacingUp;
+	PlayerDirection m_PlayerFacing;
 	float m_TimeCountX;
 	float m_TimeCountY;
 	float m_HorizontalScale;
 	float m_VerticalScale;
-	bool m_IsShellEmpty;
+	float m_ReloadTime;
+	float m_ReloadTimeCount;
+	bool m_PlayerFacingRight;
+	bool m_PlayerFacingUp;
+	bool m_ShellEmpty;
 	bool m_HasMovedHorizontal;
 	bool m_HasMovedVertical;
+	bool m_IsDead;
 
 	void MoveHorizontal(float value);
 	void MoveVertical(float value);
 	void Shoot();
+	void PlayDeath();
 	bool IsTouchingRimPlayArea();
 };
 

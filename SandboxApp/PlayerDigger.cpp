@@ -6,21 +6,29 @@
 #include "BoxCollider2D.h"
 #include "Digger.h"
 #include "Movement.h"
+#include "Bullet.h"
+#include "Nobblin.h"
+
+dae::EventDispatcher<void*> PlayerDigger::OnDeath{};
 
 PlayerDigger::PlayerDigger()
 	: GameObject()
 	, m_MovementSpeed()
 	, m_MoveTimeLimitX(0.08f)
 	, m_MoveTimeLimitY(0.08f)
-	, m_PlayerFacingRight(true)
-	, m_PlayerFacingUp(true)
+	, m_PlayerFacing(PlayerDirection::Right)
 	, m_TimeCountX()
 	, m_TimeCountY()
 	, m_HorizontalScale()
 	, m_VerticalScale()
-	, m_IsShellEmpty()
+	, m_ReloadTime(6.0f)
+	, m_ReloadTimeCount()
+	, m_PlayerFacingRight(true)
+	, m_PlayerFacingUp(true)
+	, m_ShellEmpty()
 	, m_HasMovedHorizontal()
 	, m_HasMovedVertical()
+	, m_IsDead()
 {
 }
 
@@ -77,19 +85,39 @@ void PlayerDigger::Awake()
 	auto playerDead = AnimationClip::Create(GetShared<PlayerDigger>());
 	playerDead->AddProperty(spriteRenderer, m_pDeadSprite);
 	playerDead->SetSampleRate(4);
+	m_pRefDeadAnimClip = playerDead;
+	m_pRefMainIdleAnimClip = playerIdle;
+	// Initialize AnimClip for Empty shell
+
+	auto idle = AnimationClip::Create(GetShared<PlayerDigger>());
+	idle->AddProperty(spriteRenderer, m_pWalkStraightX);
+	idle->SetSampleRate(10);
+	auto walkUp = AnimationClip::Create(GetShared<PlayerDigger>());
+	walkUp->AddProperty(spriteRenderer, m_pWalkUpX);
+	walkUp->SetSampleRate(10);
+	auto walkDown = AnimationClip::Create(GetShared<PlayerDigger>());
+	walkDown->AddProperty(spriteRenderer, m_PWalkDownX);
+	walkDown->SetSampleRate(10);
+
+	m_pRefShellEmptyIdleAnimClip = idle;
+
 
 	m_pAnimator = CreateComponent<Animator>();
 	const auto animator = m_pAnimator.lock();
 	animator->AddTransition(playerIdle, "PlayerUp", playerWalkUp, false);
 	animator->AddTransition(playerIdle, "PlayerDown", playerWalkDown, false);
-
+	animator->AddTransition(playerIdle, "IsDead", playerDead, true);
 	animator->SetDefaultAnimClip(playerIdle);
+
+	animator->AddTransition(idle, "PlayerUp", walkUp, false);
+	animator->AddTransition(idle, "PlayerDown", walkDown, false);
+	animator->AddTransition(idle, "IsDead", playerDead, true);
 
 	// Initialize Controller
 	auto inputComponent = CreateComponent<InputComponent>();
 	inputComponent->BindAxis("Horizontal", GetShared<PlayerDigger>(), &PlayerDigger::MoveHorizontal);
 	inputComponent->BindAxis("Vertical", GetShared<PlayerDigger>(), &PlayerDigger::MoveVertical);
-	inputComponent->BindAction("Shoot", InputEvent::IE_Pressed,GetShared<PlayerDigger>(),&PlayerDigger::Shoot);
+	inputComponent->BindAction("Shoot", InputEvent::IE_Pressed, GetShared<PlayerDigger>(), &PlayerDigger::Shoot);
 
 	// Initialize Collider
 	auto collider = CreateComponent<BoxCollider2D>();
@@ -108,9 +136,29 @@ void PlayerDigger::Update()
 {
 	const float deltaSeconds{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
 
+	if (m_IsDead)
+	{
+		if (m_pRefDeadAnimClip.lock()->IsFinishedPlaying())
+			OnDeath.Broadcast(nullptr);
+		return;
+	}
+
+	if (m_ShellEmpty)
+	{
+		m_ReloadTimeCount += deltaSeconds;
+		if (m_ReloadTimeCount >= m_ReloadTime)
+		{
+			m_ReloadTimeCount -= m_ReloadTime;
+			m_pAnimator.lock()->SetDefaultAnimClip(m_pRefMainIdleAnimClip.lock());
+			m_ShellEmpty = false;
+		}
+	}
+
+
 	if (m_HasMovedHorizontal)
 	{
 		m_TimeCountX += deltaSeconds;
+		const auto& currPos = m_pRefTransform.lock()->GetPosition();
 		if (m_TimeCountX >= m_MoveTimeLimitX)
 		{
 			m_TimeCountX -= m_MoveTimeLimitX;
@@ -124,7 +172,6 @@ void PlayerDigger::Update()
 				return;
 			}
 
-			const auto& currPos = m_pRefTransform.lock()->GetPosition();
 			if (!m_pRefDiggerScene.lock()->IsInBetweenCellsY(currPos))
 				m_pRefTransform.lock()->SetRelativePosition({ Digger::CellSize.x / 4.0f * m_HorizontalScale,0.0f,0.0f });
 			else
@@ -133,18 +180,21 @@ void PlayerDigger::Update()
 				float dirScale{ m_PlayerFacingUp ? 1.0f : -1.0f };
 				m_pRefTransform.lock()->SetRelativePosition({ 0.0f, Digger::CellSize.y / 6.0f * dirScale, 0.0f });
 			}
+
 		}
+
+		m_pRefDiggerScene.lock()->UpdatePlayerMovement(currPos);
 		return;
 	}
 
 	if (m_HasMovedVertical)
 	{
 		m_TimeCountY += deltaSeconds;
+		const auto& currPos = m_pRefTransform.lock()->GetPosition();
 		if (m_TimeCountY >= m_MoveTimeLimitY)
 		{
 			// check for cell collision
 			m_TimeCountY -= m_MoveTimeLimitY;
-			const auto& currPos = m_pRefTransform.lock()->GetPosition();
 			m_HasMovedVertical = false;
 
 			const bool playerGoesUp{ m_VerticalScale > 0.0f };
@@ -160,18 +210,23 @@ void PlayerDigger::Update()
 			else
 			{
 				// continue to the direction that player currently facing horizontally
-				float dirScale{ m_PlayerFacingRight ? 1.0f : -1.0f };
+				const float dirScale{ m_PlayerFacingRight ? 1.0f : -1.0f };
 				m_pRefTransform.lock()->SetRelativePosition({ Digger::CellSize.x / 4.0f * dirScale,0.0f,0.0f });
 			}
 		}
+
+		m_pRefDiggerScene.lock()->UpdatePlayerMovement(currPos);
 	}
+
+
 }
 
 void PlayerDigger::LateUpdate()
 {
 	// Clamp player to the play area
 	auto transform = GetTransform();
-	glm::fvec3 currPos{ transform->GetPosition() };
+	const glm::fvec3& currPos{ transform->GetPosition() };
+	//m_pRefDiggerScene.lock()->UpdatePlayerMovement(currPos);
 	glm::fvec3 newPos{};
 	newPos.z = currPos.z;
 	const float playAreaX{ Digger::PlayArea.x / 2.0f };
@@ -194,10 +249,30 @@ void PlayerDigger::LateUpdate()
 	if (isOutLeft || isOutRight)
 		transform->SetPosition(newPos.x, currPos.y, currPos.z);
 	if (isOutTop || isOutBottom)
-	{
-		auto animator = m_pAnimator.lock();
 		transform->SetPosition(currPos.x, newPos.y, currPos.z);
+
+	//const auto& currPos{ GetTransform()->GetPosition() };
+}
+
+void PlayerDigger::OnBeginOverlap(const std::vector<std::weak_ptr<dae::Collider>>& otherColliders)
+{
+	if (!m_IsDead)
+
+	{
+		for (const auto& collider : otherColliders)
+		{
+			// TODO: Add gold collision when dropped
+			if (std::dynamic_pointer_cast<Nobblin>(collider.lock()->GetGameObject()))
+			{
+				m_IsDead = true;
+				auto animator = m_pAnimator.lock();
+				animator->SetBool("PlayerUp", false);
+				animator->SetBool("PlayerDown", false);
+				animator->SetTrigger("IsDead");
+			}
+		}
 	}
+
 }
 
 void PlayerDigger::MoveHorizontal(float value)
@@ -207,12 +282,17 @@ void PlayerDigger::MoveHorizontal(float value)
 	//const float deltaSeconds{ GetScene()->GetSceneContext().pGameTime->GetDeltaSeconds() };
 	//m_pRefTransform.lock()->SetRelativePosition({ Digger::CellSize.x / 4.0f * worldRight.x * value,0.0f,0.0f });
 
+	if (m_IsDead)
+		return;
+
 	if (!m_HasMovedHorizontal)
 		m_HasMovedHorizontal = true;
 
 	m_HorizontalScale = value;
 
 	const bool isFacingLeft{ value < 1.0f };
+
+	m_PlayerFacing = isFacingLeft ? PlayerDirection::Left : PlayerDirection::Right;
 
 	m_pSpriteRenderer.lock()->SetFlipY(isFacingLeft);
 	const auto animator = m_pAnimator.lock();
@@ -224,6 +304,10 @@ void PlayerDigger::MoveVertical(float value)
 {
 	//glm::fvec3 worldUp{ 0.0f,1.0f,0.0f };
 	//m_pMovement.lock()->AddMovementInput(worldUp, value);
+
+	if (m_IsDead)
+		return;
+
 	if (!m_HasMovedVertical)
 		m_HasMovedVertical = true;
 
@@ -232,13 +316,39 @@ void PlayerDigger::MoveVertical(float value)
 	const auto animator = m_pAnimator.lock();
 	const bool playerGoesUp{ value > 0.0f };
 
+	m_PlayerFacing = playerGoesUp ? PlayerDirection::Up : PlayerDirection::Down;
+
 	animator->SetBool("PlayerUp", playerGoesUp);
 	animator->SetBool("PlayerDown", !playerGoesUp);
 }
 
 void PlayerDigger::Shoot()
 {
-	
+	if (m_ShellEmpty)
+		return;
+
+	const auto& position{ GetTransform()->GetPosition() };
+	auto bullet = m_pRefDiggerScene.lock()->Instantiate<Bullet>(position, {}, { 1.3f,1.3f });
+	auto nobblin = m_pRefDiggerScene.lock()->Instantiate<Nobblin>();
+	glm::fvec2 dir{};
+
+	// Please don't ask why i did this
+	switch (m_PlayerFacing)
+	{
+	case PlayerDirection::Right:	dir = { 1.0f,0.0f };	break;
+	case PlayerDirection::Left:		dir = { -1.0f,0.0f };	break;
+	case PlayerDirection::Down:		dir = { 0.0f,-1.0f };	break;
+	case PlayerDirection::Up:		dir = { 0.0f,1.0f };	break;
+	}
+
+	bullet->SetLaunchDirection(dir);
+	m_ShellEmpty = true;
+	m_pAnimator.lock()->SetDefaultAnimClip(m_pRefShellEmptyIdleAnimClip.lock());
+}
+
+void PlayerDigger::PlayDeath()
+{
+	m_pAnimator.lock()->SetTrigger("IsDead");
 }
 
 

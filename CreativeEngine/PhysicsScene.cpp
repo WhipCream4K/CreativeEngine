@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PhysicsScene.h"
 #include "Collider.h"
+#include <iostream>
 
 
 dae::PhysicsScene::PhysicsScene()
@@ -62,6 +63,12 @@ void dae::PhysicsScene::Update()
 		return;
 	}
 
+	if(m_CallForDelete)
+	{
+		m_CallForDelete = false;
+		ClearObjers();
+	}
+	
 	// Bad practice
 	{
 		std::vector<std::weak_ptr<Collider>> pCaches{};
@@ -87,7 +94,6 @@ void dae::PhysicsScene::Update()
 					}
 				}
 			}
-
 
 			m_ColliderResolvers.emplace_back(
 				std::async(std::launch::async, [](const std::shared_ptr<Collider>& collider, std::vector<std::weak_ptr<Collider>>&& otherColliders)

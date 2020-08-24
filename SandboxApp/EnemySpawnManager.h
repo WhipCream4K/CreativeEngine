@@ -19,5 +19,6 @@ private:
 	float m_TimeCount;
 	float m_SpawnInterval;
 	uint32_t m_SpawnLimit;
+	uint32_t m_CurrentSpawnCount;
 };
 

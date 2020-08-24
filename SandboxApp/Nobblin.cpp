@@ -5,6 +5,8 @@
 #include "AnimationClip.h"
 #include "Animator.h"
 #include "NavAgent.h"
+#include "BoxCollider2D.h"
+#include "PlayerDigger.h"
 
 void Nobblin::Awake()
 {
@@ -28,9 +30,32 @@ void Nobblin::Awake()
 	navAgent->SetCellDimension(Digger::CellSize);
 	navAgent->SetCellRowNColumn(10, 15);
 	navAgent->SetMaxBound(Digger::PlayArea);
-	
-	navAgent->ResetCellsState(nullptr, 150);
 
+	auto diggerScene = GetScene()->GetShared<Digger>();
+	auto* cellSemantics{ diggerScene->GetCurrentCellSemantics() };
+	std::array<bool, Digger::CellCount> cellType{};
+	for (uint32_t i = 0; i < Digger::CellCount; ++i)
+	{
+		int semantics{ cellSemantics[i] };
+		cellType[i] = semantics == 4 || semantics == 5 || semantics == 0;
+	}
+	navAgent->CreateCustomCells(cellType.data(), 15, 10);
+
+	m_pRefNavAgent = navAgent;
+
+	const auto& scale{ GetTransform()->GetScale() };
+	auto collider2D = CreateComponent<BoxCollider2D>();
+	collider2D->SetSize({ scale.x * 32.0f,scale.y * 30.0f });
+	collider2D->SetIsTrigger(true);
+}
+
+void Nobblin::Start()
+{
+	const auto player = GetScene()->GetGameObjectOfType<PlayerDigger>();
+	if (player)
+		m_pRefMainPlayer = player;
+	
+	//auto path = m_pRefNavAgent.lock()->RequestPath(player->GetTransform()->GetPosition());
 }
 
 void Nobblin::Update()
