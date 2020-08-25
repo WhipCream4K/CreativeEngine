@@ -42,8 +42,10 @@ void dae::Collider::ClearCaches()
 void dae::Collider::OnBeginOverlap()
 {
 	if(m_IsTriggered)
-	{	
-		GetGameObject()->OnBeginOverlap(m_pCaches);
+	{
+		auto gameObject = GetGameObject();
+		if(gameObject)
+			gameObject->OnBeginOverlap(m_pCaches);
 		m_pCaches.clear();
 	}
 }

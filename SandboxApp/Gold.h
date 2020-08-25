@@ -18,6 +18,7 @@ public:
 
 	enum class GoldState
 	{
+		None,
 		CheckingForDrop,
 		IsCountingDown,
 		IsDropping,
@@ -50,13 +51,11 @@ private:
 
 	glm::fvec2 m_ActualSize;
 	float m_TimeCount{};
-	float m_TimeBeforeDrop{2.0f};
+	float m_TimeBeforeDrop{1.0f};
 	GoldState m_State{ GoldState::CheckingForDrop };
 	bool m_IsPickable{};
 	bool m_ShouldSurvive{};
 	bool m_IsPlayerBelowMe{};
-	bool m_ReadyForDrop{};
-	bool m_IsDropping{};
 
 	void CountDownDropping();
 	void PlayDropping();

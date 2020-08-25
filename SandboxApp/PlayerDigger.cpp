@@ -9,7 +9,7 @@
 #include "Bullet.h"
 #include "Nobblin.h"
 
-dae::EventDispatcher<void*> PlayerDigger::OnDeath{};
+dae::EventDispatcher<int> PlayerDigger::OnDeath{};
 
 PlayerDigger::PlayerDigger()
 	: GameObject()
@@ -41,6 +41,40 @@ void PlayerDigger::SetPlayerStart(const glm::fvec3& position)
 	}
 
 	m_pRefTransform.lock()->SetPosition(position);
+}
+
+glm::fvec2 PlayerDigger::GetPointForward()
+{
+	const auto& currPos{ GetTransform()->GetPosition() };
+	glm::fvec2 forward{};
+	switch (m_PlayerFacing)
+	{
+	case PlayerDirection::Right: forward = { currPos.x + m_PlayerActualSize.x / 2.0f,currPos.y }; break;
+	case PlayerDirection::Left: forward = { currPos.x - m_PlayerActualSize.x / 2.0f,currPos.y }; break;
+	case PlayerDirection::Down: forward = { currPos.x,currPos.y - m_PlayerActualSize.y / 2.0f }; break;
+	case PlayerDirection::Up: forward = { currPos.x, currPos.y + m_PlayerActualSize.y / 2.0f }; break;
+	}
+
+	return forward;
+}
+
+glm::fvec2 PlayerDigger::GetForward()
+{
+	glm::fvec2 forward{};
+	switch (m_PlayerFacing)
+	{
+	case PlayerDirection::Right: forward = { 1.0f,0.0f }; break;
+	case PlayerDirection::Left: forward = { -1.0f,0.0f }; break;
+	case PlayerDirection::Down: forward = { 0.0f,-1.0f }; break;
+	case PlayerDirection::Up: forward = { 0.0f,1.0f }; break;
+	}
+
+	return forward;
+}
+
+void PlayerDigger::CallDeath()
+{
+	PlayDeath(0);
 }
 
 void PlayerDigger::Awake()
@@ -130,6 +164,8 @@ void PlayerDigger::Awake()
 
 	m_pRefDiggerScene = GetScene()->GetShared<Digger>();
 	// Initialize Player speed one click per pixel
+
+	//OnDeath.RegisterObserver<PlayerDigger>(GetShared<PlayerDigger>(), &PlayerDigger::PlayDeath);
 }
 
 void PlayerDigger::Update()
@@ -139,7 +175,7 @@ void PlayerDigger::Update()
 	if (m_IsDead)
 	{
 		if (m_pRefDeadAnimClip.lock()->IsFinishedPlaying())
-			OnDeath.Broadcast(nullptr);
+			OnDeath.Broadcast(0);
 		return;
 	}
 
@@ -217,12 +253,12 @@ void PlayerDigger::Update()
 
 		m_pRefDiggerScene.lock()->UpdatePlayerMovement(currPos);
 	}
-
-
 }
 
 void PlayerDigger::LateUpdate()
 {
+	ClampIfGold();
+
 	// Clamp player to the play area
 	auto transform = GetTransform();
 	const glm::fvec3& currPos{ transform->GetPosition() };
@@ -324,6 +360,8 @@ void PlayerDigger::MoveVertical(float value)
 
 void PlayerDigger::Shoot()
 {
+	if (m_IsDead) return;
+	
 	if (m_ShellEmpty)
 		return;
 
@@ -346,13 +384,63 @@ void PlayerDigger::Shoot()
 	m_pAnimator.lock()->SetDefaultAnimClip(m_pRefShellEmptyIdleAnimClip.lock());
 }
 
-void PlayerDigger::PlayDeath()
+void PlayerDigger::PlayDeath(int)
 {
-	m_pAnimator.lock()->SetTrigger("IsDead");
+	m_IsDead = true;
+	auto animator = m_pAnimator.lock();
+	animator->SetBool("PlayerUp", false);
+	animator->SetBool("PlayerDown", false);
+	animator->SetTrigger("IsDead");
 }
 
 
 bool PlayerDigger::IsTouchingRimPlayArea()
 {
 	return false;
+}
+
+void PlayerDigger::ClampIfGold()
+{
+	if (!m_pRefDiggerScene.expired())
+	{
+		if (m_PlayerFacing == PlayerDirection::Down
+			|| m_PlayerFacing == PlayerDirection::Left
+			|| m_PlayerFacing == PlayerDirection::Right)
+		{
+			auto scene = m_pRefDiggerScene.lock();
+			const auto& currPos{ GetTransform()->GetPosition() };
+			auto forward{ glm::fvec3{GetForward(),currPos.z} };
+			//const float offset{ 1.1f };
+			//forward.y -= offset;
+			const glm::fvec3 pointInfront{ currPos + forward * Digger::CellSize.x };
+			const auto blockId{ scene->GetBlockIdFromWorldPos(pointInfront) };
+			if (blockId == Digger::BlockId::Gold)
+			{
+				const auto blockIndex{ scene->GetBlockIndexFromWorldPos(pointInfront) };
+				const auto blockPos{ scene->GetWorldPosFromIndex(blockIndex) };
+				const glm::fvec3 invertForward{ -forward.x,-forward.y,forward.z };
+				glm::fvec3 clampPos{ blockPos + invertForward * Digger::CellSize.x };
+				clampPos.z = currPos.z;
+				GetTransform()->SetPosition(clampPos);
+			}
+		}
+		//if (m_PlayerFacing == PlayerDirection::Down)
+		//{
+		//	auto scene = m_pRefDiggerScene.lock();
+		//	auto forward{ glm::fvec3{GetPointForward(),0.0f} };
+		//	const float offset{ 1.0f };
+		//	forward.y -= offset;
+
+		//	const auto blockId{ scene->GetBlockIdFromWorldPos(forward) };
+		//	if (blockId == Digger::BlockId::Gold)
+		//	{
+		//		const auto blockIndex{ scene->GetBlockIndexFromWorldPos(forward) };
+		//		auto blockPos{ scene->GetWorldPosFromIndex(blockIndex) };
+		//		blockPos.y += Digger::CellSize.y;
+		//		blockPos.z = 0.0f;
+		//		GetTransform()->SetPosition(blockPos);
+		//	}
+		//}
+	}
+
 }

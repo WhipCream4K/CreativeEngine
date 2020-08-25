@@ -10,6 +10,9 @@ dae::NavAgent::NavAgent()
 {
 }
 
+// Big thanks to Sebastian Lague, a youtube who has a video about A star algorithm.
+// It helps me made this https://www.youtube.com/watch?v=mZfyt03LDH4&t=1289s
+
 WayPoints dae::NavAgent::RequestPath(const glm::fvec2& target)
 {
 	WayPoints wayPoints;
@@ -115,8 +118,8 @@ std::shared_ptr<Node> dae::NavAgent::GetNodeFromWorldPos(const glm::fvec2& pos)
 	percentX = Clamp(percentX, 0.0f, 1.0f);
 	percentY = Clamp(percentY, 0.0f, 1.0f);
 
-	int x{ int(float(m_CellCol - 1) * percentX) };
-	int y{ int(float(m_CellRow - 1) * percentY) };
+	int x{ int(float(m_CellCol) * percentX) };
+	int y{ int(float(m_CellRow ) * percentY) };
 	const uint32_t index{ uint32_t(y * int(m_CellCol) + x) };
 	return m_pCellNodes[index];
 }
@@ -190,7 +193,7 @@ std::forward_list<glm::fvec2> dae::NavAgent::CalculatePath(const glm::fvec2& tar
 				currentNode = currentNode->pParent.lock();
 			}
 
-			path.reverse();
+			//path.reverse();
 
 			return path;
 		}

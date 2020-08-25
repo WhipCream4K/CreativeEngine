@@ -16,6 +16,7 @@ namespace dae
 		// For projectiles
 		void SetInitialVelocity(float velocity);
 		void SetAcceleration(float value) { m_Acceleration = value; }
+		void SetAccelerationTime(float time);
 		float GetAcceleration() const { return m_Acceleration; }
 
 	protected:

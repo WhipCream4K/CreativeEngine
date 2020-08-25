@@ -5,6 +5,7 @@
 #include "BoxCollider2D.h"
 #include "Movement.h"
 #include "Digger.h"
+#include "Nobblin.h"
 
 void Bullet::SetLaunchDirection(const glm::fvec2& direction)
 {
@@ -95,7 +96,14 @@ void Bullet::Update()
 void Bullet::OnBeginOverlap(const std::vector<std::weak_ptr<dae::Collider>>& otherColliders)
 {
 	//TODO: Add the tpye of object to cause bullet destruction
-	otherColliders;
+	for (const auto& collider : otherColliders)
+	{
+		const auto gameObject = collider.lock()->GetGameObject();
+		if(std::dynamic_pointer_cast<Nobblin>(gameObject))
+		{
+			GetScene()->Destroy(gameObject);
+		}
+	}
 	//auto animator = m_pRefAnimator.lock();
 	//animator->SetTrigger("IsImpact");
 	//otherColliders;

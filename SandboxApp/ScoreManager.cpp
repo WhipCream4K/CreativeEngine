@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "ScoreManager.h"
+
+#include "AudioClip.h"
 #include "TextRenderer.h"
 #include "Text.h"
 #include "PickUps.h"
+#include "AudioSource.h"
 
 ScoreManager::ScoreManager()
 	: m_TotalScore()
@@ -23,6 +26,8 @@ void ScoreManager::UpdateScore(int score)
 			replacement.append(size_t(m_InitScoreShown) - textsize,'0');
 			std::string test{ replacement + scoreText };
 			textRenderer->SetText(replacement.append(scoreText));
+			if (!m_pRefPickUpSound.lock()->IsPlaying())
+				m_pRefPickUpSound.lock()->Play();
 		}
 	}
 }
@@ -42,6 +47,11 @@ void ScoreManager::Awake()
 	GetTransform()->SetPosition({ -400.0f,310.0f,-1.0f });
 
 	PickUps::OnScoreUpdate.RegisterObserver<ScoreManager>(GetShared<ScoreManager>(), &ScoreManager::UpdateScore);
+
+	auto sound = ResourceManager::Load<AudioClip>("./Resources/Digger/PickUp.wav", "PickUpSound");
+	auto soundMaker = CreateComponent<AudioSource>();
+	soundMaker->SetAudioClip(sound);
+	m_pRefPickUpSound = soundMaker;
 }
 
 void ScoreManager::Start()

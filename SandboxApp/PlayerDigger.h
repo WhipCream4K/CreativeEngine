@@ -24,9 +24,13 @@ public:
 	};
 	
 	PlayerDigger();
-	static dae::EventDispatcher<void*> OnDeath;
+	static dae::EventDispatcher<int> OnDeath;
 	void SetPlayerStart(const glm::fvec3& position);
 	void SetPlayerSpeed(const glm::fvec2& speed) { m_MovementSpeed = speed; }
+	const glm::fvec2& GetActualSize() const { return m_PlayerActualSize; }
+	glm::fvec2 GetPointForward();
+	glm::fvec2 GetForward();
+	void CallDeath();
 
 protected:
 
@@ -82,7 +86,8 @@ private:
 	void MoveHorizontal(float value);
 	void MoveVertical(float value);
 	void Shoot();
-	void PlayDeath();
+	void PlayDeath(int something);
 	bool IsTouchingRimPlayArea();
+	void ClampIfGold();
 };
 

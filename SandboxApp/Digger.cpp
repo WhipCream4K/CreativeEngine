@@ -44,15 +44,15 @@ bool Digger::IsInBetweenCellsX(const glm::fvec3& position)
 	const float remapPos{ position.x + (PlayArea.x / 2.0f) };
 	const int cellCol{ int(remapPos / CellSize.x) };
 	const float actualCellPosX{ (CellSize.x * float(cellCol)) + CellSize.x / 2.0f };
-	return abs(actualCellPosX - remapPos) > 0.01f;
+	return abs(actualCellPosX - remapPos) > 1.1f;
 }
 
 bool Digger::IsInBetweenCellsY(const glm::fvec3& position)
 {
-	const float remapPos{ PlayArea.y / 2.0f + position.y };
+	const float remapPos{ PlayArea.y / 2.0f - position.y };
 	const int cellRow{ int(remapPos / CellSize.y) };
 	const float actualCellPosY{ CellSize.y * float(cellRow) + CellSize.y / 2.0f };
-	return abs(actualCellPosY - remapPos) > 0.01f;
+	return abs(actualCellPosY - remapPos) > 1.10f;
 }
 
 void Digger::UpdatePlayerMovement(const glm::fvec2& pos)
@@ -62,7 +62,7 @@ void Digger::UpdatePlayerMovement(const glm::fvec2& pos)
 	// Check if this cell is a level cell
 	const uint32_t index{ uint32_t(currCellRow * int(MaxCellCol) + currCellCol) };
 	const BlockId semantics{ BlockId(m_pCellSemantics[index]) };
-	if (semantics != BlockId::None && semantics != BlockId::PlayerStart)
+	if (semantics != BlockId::None && semantics != BlockId::PlayerStart && semantics != BlockId::Gold)
 	{
 		m_pCellSemantics[index] = char(BlockId::None);
 		glm::fvec2 cellPos{};
@@ -94,8 +94,8 @@ uint32_t Digger::GetBlockIndexFromWorldPos(const glm::fvec3& position)
 
 glm::fvec3 Digger::GetWorldPosFromIndex(uint32_t index)
 {
-	int currRow{ int(index / MaxCellCol) - 1 };
-	int currCol{ int(index % MaxCellCol) - 1};
+	int currRow{ int(index / MaxCellCol) };
+	int currCol{ int(index % MaxCellCol)};
 
 	currRow = currRow < 0 ? 0 : currRow;
 	currRow = currRow > MaxCellRow ? int(MaxCellRow) : currRow;
@@ -110,6 +110,12 @@ glm::fvec3 Digger::GetWorldPosFromIndex(uint32_t index)
 	cellPos.y = PlayArea.y / 2.0f - (float(currRow) * CellSize.y - offset.y);
 
 	return cellPos;
+}
+
+void Digger::SetBlockSemantic(uint32_t index, BlockId semantic)
+{
+	if(index < CellCount)
+		m_pCellSemantics[index] = char(semantic);
 }
 
 void Digger::SceneInitialize()
@@ -297,30 +303,17 @@ void Digger::SceneInitialize()
 	//player->GetTransform()->SetScale(relativeScaling.x, relativeScaling.y);
 
 	auto scoreManager = CreateGameObject<ScoreManager>();
-	//auto nobblin = CreateGameObject<Nobblin>();
 
-	//glm::fvec3 position{-200.0f,100.0f,0.0f};
-	//for (int i = 0; i < 150; ++i)
-	//{
-	//	if (i % 10 == 0 && i != 0)
-	//	{
-	//		position.y -= 60.0f;
-	//		position.x = -200.0f;
-	//	}
-	//	auto collisionTest = CreateGameObject(position);
-	//	auto collider = collisionTest->CreateComponent<BoxCollider2D>();
-	//	collider->SetSize({ 50.0f,50.0f });
+	// Initialize Title
+	{
+		auto title = ResourceManager::Load<DefaultTextureData>("./Resources/Digger/Titile.png", "Title");
+		m_pTitle = Sprite::Create(title);
 
-	//	position.x += 60.0f;
-	//}
+		//auto mainmenu = CreateGameObject({0.0f,0.0f,2.0f});
+		//auto spriteRenederer = mainmenu->CreateComponent<SpriteRenderer>();
+		//spriteRenederer->SetSprite(m_pTitle,true);
+	}
 
-	//auto collisionTest = CreateGameObject({ -150.0f,0.0f,0.0f });
-	//auto collider = collisionTest->CreateComponent<BoxCollider2D>();
-	//collider->SetSize({ 50.0f,50.0f });
-
-	//collisionTest = CreateGameObject({ 150.0f,0.0f,0.0f });
-	//collider = collisionTest->CreateComponent<BoxCollider2D>();
-	//collider->SetSize({ 50.0f,50.0f });
 }
 
 void Digger::SetUpInputMappingGroup()

@@ -5,6 +5,7 @@ namespace dae
 {
 	class TextRenderer;
 	class Text;
+	class AudioSource;
 }
 class ScoreManager : public dae::GameObject
 {
@@ -17,6 +18,7 @@ protected:
 private:
 	std::weak_ptr<dae::TextRenderer> m_pTextRenderer;
 	std::shared_ptr<dae::Text> m_pText;
+	std::weak_ptr<dae::AudioSource> m_pRefPickUpSound;
 	static constexpr int m_InitScoreShown{ 5 };
 	int m_TotalScore;
 };

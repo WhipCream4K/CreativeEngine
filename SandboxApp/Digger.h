@@ -51,6 +51,7 @@ public:
 	uint32_t GetBlockIndexFromWorldPos(const glm::fvec3& position);
 	glm::fvec3 GetWorldPosFromIndex(uint32_t index);
 	static constexpr bool IsOutSidePlayArea(const glm::fvec3& pos);
+	void SetBlockSemantic(uint32_t index, BlockId semantic);
 	
 protected:
 
@@ -63,12 +64,14 @@ private:
 	std::unordered_map<uint32_t, std::shared_ptr<dae::Sprite>> m_pBigSprites;
 	std::unordered_map<PathDirection, std::shared_ptr<dae::Sprite>> m_pWalkSprites;
 	std::shared_ptr<dae::Text> m_pDiggerFont;
+	std::shared_ptr<dae::Sprite> m_pTitle;
 	std::shared_ptr<dae::Sprite> m_pBackgroundSprite;
 
 	std::weak_ptr<PlayerDigger> m_pRefMainPlayer;
 	const glm::fvec3* m_pRefMainPlayerPos;
 	
 	char* m_pCellSemantics;
+	bool m_HasTheGameStart;
 	
 	void SpawnPath(const glm::fvec3& position, const glm::fvec2& scale);
 	void InstantiatePath(const glm::fvec3& position, const glm::fvec2& scale);

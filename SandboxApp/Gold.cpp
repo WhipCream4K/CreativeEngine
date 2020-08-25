@@ -41,12 +41,12 @@ void Gold::Awake()
 	auto dropping = AnimationClip::Create(GetShared<Gold>());
 	dropping->AddProperty(spriteRenderer, m_pMoneyBagDropSprite);
 	m_pRefMoneyBagDropAnimClip = dropping;
-	
+
 	auto animator = CreateComponent<Animator>();
 	animator->SetDefaultAnimClip(shakingClip);
 	animator->AddTransition(shakingClip, "IsDropping", dropping, false);
 	animator->AddTransition(dropping, "IsImpact", shattered, true);
-	
+
 	animator->SetActive(false);
 	m_pRefAnimator = animator;
 
@@ -60,8 +60,11 @@ void Gold::Awake()
 	m_pRefDiggerScene = GetScene()->GetShared<Digger>();
 
 	auto movement = CreateComponent<Movement>();
-	movement->SetAcceleration(0.0f);
-	movement->SetInitialVelocity(400.0f);
+	//movement->SetAcceleration(0.1f);
+	movement->SetAccelerationTime(0.1f);
+	movement->SetMaxVelocity(400.0f);
+	//movement->SetInitialVelocity(400.0f);
+	m_pRefMovement = movement;
 }
 
 void Gold::Start()
@@ -81,6 +84,7 @@ void Gold::Update()
 	case GoldState::IsCountingDown:		CountDownDropping();			break;
 	case GoldState::IsDropping:			PlayDropping();					break;
 	case GoldState::IsShattering:		PlayShattering();				break;
+	case GoldState::None:												break;
 	}
 	//CheckForBelowCellAndPlayer();
 	//CountDownDropping();
@@ -90,15 +94,29 @@ void Gold::Update()
 
 void Gold::OnBeginOverlap(const std::vector<std::weak_ptr<dae::Collider>>& colliders)
 {
-	colliders;
-	//auto player = std::static_pointer_cast<GameObject>(m_pRefMainPlayer.lock());
-	//for (const auto& collider : colliders)
-	//{
-	//	if (collider.lock()->GetGameObject() == player)
-	//	{
-	//		GetTransform()->SetRelativePosition({ 30.0f,0.0f,0.0f });
-	//	}
-	//}
+	//TODO: Make Nobblin able to pick gold up too
+	auto player = std::static_pointer_cast<GameObject>(m_pRefMainPlayer.lock());
+	for (const auto& collider : colliders)
+	{
+		if (collider.lock()->GetGameObject() == player)
+		{
+			if(m_IsPickable)
+			{
+				PickUps::OnScoreUpdate.Broadcast(m_pRefPickUps.lock()->GetGainScore());
+				const auto& currPos{ GetTransform()->GetPosition() };
+				GetScene()->Destroy(GetShared<Gold>());
+				auto scene = m_pRefDiggerScene.lock();
+				const auto blockIndex{ scene->GetBlockIndexFromWorldPos(currPos) };
+				scene->SetBlockSemantic(blockIndex, Digger::BlockId::None);
+			}
+
+			if(m_State == GoldState::IsDropping)
+			{
+				m_pRefMainPlayer.lock()->CallDeath();
+			}
+			
+		}
+	}
 }
 
 void Gold::CountDownDropping()
@@ -119,8 +137,12 @@ void Gold::CountDownDropping()
 		if (m_TimeCount >= m_TimeBeforeDrop)
 		{
 			m_TimeCount -= m_TimeBeforeDrop;
-			m_IsDropping = true;
+			//m_IsDropping = true;
 			m_pRefAnimator.lock()->SetBool("IsDropping", true);
+			const auto& currPos{ GetTransform()->GetPosition() };
+			const auto scene = m_pRefDiggerScene.lock();
+			const auto blockIndex{ scene->GetBlockIndexFromWorldPos(currPos) };
+			scene->SetBlockSemantic(blockIndex, Digger::BlockId::Level);
 			m_State = GoldState::IsDropping;
 		}
 	}
@@ -142,7 +164,7 @@ void Gold::PlayDropping()
 	{
 		auto movement = m_pRefMovement.lock();
 		movement->AddMovementInput({ 0.0f,-1.0f }, 1.0f);
-		m_ReadyForDrop = false;
+		//m_ReadyForDrop = false;
 	}
 
 	// Check for collision with the level
@@ -157,37 +179,51 @@ void Gold::PlayDropping()
 		// Check first if the next one is out of play area
 		const bool isOutOfBound{ currPos.y - m_ActualSize.y / 2.0f < -Digger::PlayArea.y / 2.0f };
 
-		if(!isOutOfBound)
+		if (!isOutOfBound)
 		{
-			const auto bottomBlockId{ scene->GetBlockIdFromWorldPos({currPos.x,currPos.y + m_ActualSize.y / 2.0f,1.0f}) };
-			if (bottomBlockId == Digger::BlockId::Level)
+			const auto bottomBlockId{ scene->GetBlockIdFromWorldPos({currPos.x,currPos.y - m_ActualSize.y,1.0f}) };
+			if (bottomBlockId == Digger::BlockId::Level || bottomBlockId == Digger::BlockId::Jewel)
 				hasTouchedTheGround = true;
 		}
 
-		if(isOutOfBound || hasTouchedTheGround)
+		if (isOutOfBound || hasTouchedTheGround)
 		{
-			if(!m_pRefAnimator.expired() && !m_pRefSpriteRenderer.expired())
+			if (!m_pRefAnimator.expired() && !m_pRefSpriteRenderer.expired())
 			{
-				if(m_ShouldSurvive)
+				if (m_ShouldSurvive)
 				{
 					auto animator = m_pRefAnimator.lock();
 					animator->SetActive(false);
 					auto spriteRenderer = m_pRefSpriteRenderer.lock();
-					spriteRenderer->SetSprite(m_pMoneyBagIdleSprite,false);
+					spriteRenderer->SetSprite(m_pMoneyBagIdleSprite, false);
+					m_State = GoldState::CheckingForDrop;
 				}
 				else
 				{
 					auto animator = m_pRefAnimator.lock();
 					animator->SetActive(true);
+					animator->SetDefaultAnimClip(m_pRefMoneyBagDropAnimClip.lock());
 					animator->SetTrigger("IsImpact");
 					m_State = GoldState::IsShattering;
 				}
 			}
 
 			if (isOutOfBound)
+			{
 				ClampToPlayArea();
-			else
+				// update cell semantics
+				const auto blockId = scene->GetBlockIndexFromWorldPos(currPos);
+				scene->SetBlockSemantic(blockId, Digger::BlockId::Gold);
+			}
+			else if(hasTouchedTheGround)
+			{
 				ClampToTheGround();
+				// update cell semantics
+				const auto blockId = scene->GetBlockIndexFromWorldPos(currPos);
+				scene->SetBlockSemantic(blockId, Digger::BlockId::Gold);
+			}
+
+
 		}
 	}
 
@@ -210,9 +246,9 @@ void Gold::CheckForBelowCellAndPlayer()
 		const uint32_t nextBottomIndex{ bottomIndex + Digger::MaxCellCol };
 
 		auto* cellsemantics{ scene->GetCurrentCellSemantics() };
-
+		scene->SetBlockSemantic(currIndex, Digger::BlockId::Gold); // safe guard when there's two money bag in the same cell
 		const auto nextBottomCellId{ Digger::BlockId(cellsemantics[nextBottomIndex]) };
-		m_ShouldSurvive = nextBottomCellId == Digger::BlockId::Level ? true : false;
+		m_ShouldSurvive = nextBottomCellId == Digger::BlockId::Level || nextBottomCellId == Digger::BlockId::Jewel ? true : false;
 
 		Digger::BlockId bottomCellSemantics{ Digger::BlockId(cellsemantics[bottomIndex]) };
 		if (bottomCellSemantics == Digger::BlockId::None)
@@ -225,7 +261,7 @@ void Gold::CheckForBelowCellAndPlayer()
 			if (!m_pRefMainPlayer.expired())
 			{
 				auto player = m_pRefMainPlayer.lock();
-				const auto& playerPos{ player->GetTransform()->GetPosition() };
+				const auto& playerPos{ player->GetPointForward() };
 				const glm::fvec2 bottomCellPos{ currPos.x,currPos.y - Digger::CellSize.y };
 				bool isNearXPlane{ abs(playerPos.x - bottomCellPos.x) < 0.01f };
 				bool isNearYPlane{ abs(playerPos.y - bottomCellPos.y) < 0.01f };
@@ -244,10 +280,12 @@ void Gold::CheckForBelowCellAndPlayer()
 
 void Gold::PlayShattering()
 {
-	if(m_pRefMoneyBagShatteredAnimClip.lock()->IsFinishedPlaying())
+	if (m_pRefMoneyBagShatteredAnimClip.lock()->IsFinishedPlaying())
 	{
 		m_pRefAnimator.lock()->SetActive(false);
+		m_pRefSpriteRenderer.lock()->SetSprite(m_pMoneyDestroyedSprites[m_pMoneyDestroyedSprites.size() - 1],false);
 		m_IsPickable = true;
+		m_State = GoldState::None;
 	}
 }
 
@@ -288,7 +326,7 @@ void Gold::ClampToTheGround()
 	// Clamp to the ground
 	const auto currBlockIndex{ scene->GetBlockIndexFromWorldPos(currPos) };
 	const auto currBlockPos{ scene->GetWorldPosFromIndex(currBlockIndex) };
-	m_ReadyForDrop = false;
-	m_IsDropping = false;
+	//m_ReadyForDrop = false;
+	//m_IsDropping = false;
 	GetTransform()->SetPosition({ currBlockPos.x,currBlockPos.y,currPos.z });
 }

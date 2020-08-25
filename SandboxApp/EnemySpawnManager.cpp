@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "EnemySpawnManager.h"
 
+
+#include "Digger.h"
 #include "Nobblin.h"
 
 EnemySpawnManager::EnemySpawnManager()
@@ -37,7 +39,7 @@ void EnemySpawnManager::Update()
 		if (m_TimeCount >= firstEnemySpawnTime)
 		{
 			m_TimeCount -= firstEnemySpawnTime;
-			scene->Instantiate<Nobblin>(m_SpawnPoint);
+			scene->Instantiate<Nobblin>(m_SpawnPoint,{},Digger::ObjectRelativeScaling);
 			m_CurrentSpawnCount++;
 		}
 	}
@@ -45,6 +47,6 @@ void EnemySpawnManager::Update()
 	if (m_TimeCount >= m_SpawnInterval)
 	{
 		m_TimeCount -= m_SpawnInterval;
-		scene->Instantiate<Nobblin>(m_SpawnPoint);
+		scene->Instantiate<Nobblin>(m_SpawnPoint,{},Digger::ObjectRelativeScaling);
 	}
 }

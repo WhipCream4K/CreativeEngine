@@ -41,6 +41,12 @@ void dae::Movement::SetInitialVelocity(float velocity)
 	m_MoveVelocity = velocity;
 }
 
+void dae::Movement::SetAccelerationTime(float time)
+{
+	m_AccelerationTime = time;
+	m_Acceleration = m_MaxVelocity / time;
+}
+
 void dae::Movement::Awake()
 {
 	m_pRefTransform = GetGameObject()->GetTransform();
